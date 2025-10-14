@@ -1,14 +1,14 @@
 import * as THREE from 'three';
-import System, * as Particle from '@/core/libs/three-nebula';
-import { useAddSignal, useDispatchSignal, useRemoveSignal } from "@/hooks";
-import * as BasicObject3D from "@/core/built-in/assets/BasicObject3D";
-import ParticleEmitter from "@/core/objects/ParticleEmitter";
-import { isParticleObject } from "@/utils";
+import System, * as Particle from '#/core/libs/three-nebula';
+import { useAddSignal, useDispatchSignal, useRemoveSignal } from "#/hooks";
+import * as BasicObject3D from "#/core/built-in/assets/BasicObject3D";
+import ParticleEmitter from "#/core/objects/ParticleEmitter";
+import { isParticleObject } from "#/utils";
 import Viewer from "../Viewer";
-import App from "@/core/app/App";
-import Preview from "@/core/preview/Preview.ts";
+import App from "#/core/app/App";
+import Preview from "#/core/preview/Preview.ts";
 
-let _objectRemovedFn, _objectAddedFn, _bodyChangedFn,_addEmitterFn,_emitterAdd2Fn;
+let _objectRemovedFn, _objectAddedFn, _bodyChangedFn, _addEmitterFn, _emitterAdd2Fn;
 
 class ParticleSystem {
   private viewer: Viewer | Preview;
@@ -39,7 +39,7 @@ class ParticleSystem {
    */
   static Body3DMap: Map<string, THREE.Sprite | THREE.Mesh> = new Map();
 
-  constructor(viewer:Viewer | Preview) {
+  constructor(viewer: Viewer | Preview) {
     this.viewer = viewer;
 
     this.particlesGroup = new THREE.Group();
@@ -64,7 +64,7 @@ class ParticleSystem {
     return this.spriteSystem.emitters.length > 0 || this.meshSystem.emitters.length > 0;
   }
 
-  initEvent(){
+  initEvent() {
     _objectRemovedFn = this.handleObjectRemoved.bind(this);
     useAddSignal("objectRemoved", _objectRemovedFn);
     _objectAddedFn = this.handleObjectAdded.bind(this);
@@ -79,7 +79,7 @@ class ParticleSystem {
     this.meshSystem.eventDispatcher.addEventListener('EMITTER_ADDED', _addEmitterFn)
   }
 
-  handleAddEmitter(emitter: Particle.Emitter){
+  handleAddEmitter(emitter: Particle.Emitter) {
     useDispatchSignal('particleSystemAddEmitter', emitter);
   }
 
@@ -127,7 +127,7 @@ class ParticleSystem {
   /**
    * 监听粒子body对象改变
    */
-  handleParticleBodyChanged(data: IParticle.Config['init']['body'], object3D: THREE.Texture | string | THREE.Mesh, isObjectChange = false, done = (_data: IParticle.Config['init']['body']) => {}) {
+  handleParticleBodyChanged(data: IParticle.Config['init']['body'], object3D: THREE.Texture | string | THREE.Mesh, isObjectChange = false, done = (_data: IParticle.Config['init']['body']) => { }) {
     if (!object3D || !data?.body) return;
 
     const selected = App.selected;
@@ -155,7 +155,7 @@ class ParticleSystem {
     const emitter = selected.emitter as Particle.Emitter;
     const initializer = emitter.initializers.find((item) => item.type === "Body");
     // 如果body内的对象未变更直接修改基础属性并返回
-    if (initializer && !isObjectChange){
+    if (initializer && !isObjectChange) {
       initializer.isEnabled = data.isEnabled;
       done(data);
       return;
@@ -263,7 +263,7 @@ class ParticleSystem {
   /**
    * 监听添加Emitter
    */
-  handleEmitterAdd(emitter:Particle.Emitter,system = "spriteSystem"){
+  handleEmitterAdd(emitter: Particle.Emitter, system = "spriteSystem") {
     this[system].addEmitter(emitter);
   }
 
@@ -291,4 +291,4 @@ class ParticleSystem {
   }
 }
 
-export {ParticleSystem};
+export { ParticleSystem };

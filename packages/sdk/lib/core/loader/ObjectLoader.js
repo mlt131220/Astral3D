@@ -10,10 +10,10 @@ import {
   TEXTURE_MAPPING,
   TEXTURE_WRAPPING,
   TEXTURE_FILTER,
-} from '@/constant/index'
-import ParticleEmitter from '@/core/objects/ParticleEmitter'
-import Billboard from '@/core/objects/Billboard'
-import { HtmlPanel, HtmlSprite } from '@/core/objects/HtmlPanel'
+} from '#/constant/index'
+import ParticleEmitter from '#/core/objects/ParticleEmitter'
+import Billboard from '#/core/objects/Billboard'
+import { HtmlPanel, HtmlSprite } from '#/core/objects/HtmlPanel'
 import Tiles from '../objects/Tile.js'
 
 class ObjectLoader extends THREE.Loader {

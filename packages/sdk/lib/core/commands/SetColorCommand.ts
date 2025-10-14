@@ -1,5 +1,5 @@
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks/useSignal";
+import { useDispatchSignal } from "#/hooks/useSignal";
 import App from "../app/App";
 
 /**
@@ -14,7 +14,7 @@ class SetColorCommand extends Command {
 	public oldValue;
 	public newValue;
 
-	constructor(object, attributeName, newValue ) {
+	constructor(object, attributeName, newValue) {
 		super();
 		this.type = 'SetColorCommand';
 		this.name = `Set ${attributeName}`;
@@ -27,16 +27,16 @@ class SetColorCommand extends Command {
 	}
 
 	execute() {
-		this.object[ this.attributeName ].setStyle(this.newValue);
-		useDispatchSignal("objectChanged",this.object);
+		this.object[this.attributeName].setStyle(this.newValue);
+		useDispatchSignal("objectChanged", this.object);
 	}
 
 	undo() {
-		this.object[ this.attributeName ].setStyle(this.oldValue);
-		useDispatchSignal("objectChanged",this.object);
+		this.object[this.attributeName].setStyle(this.oldValue);
+		useDispatchSignal("objectChanged", this.object);
 	}
 
-	update( cmd ) {
+	update(cmd) {
 		this.newValue = cmd.newValue;
 	}
 
@@ -51,10 +51,10 @@ class SetColorCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
-		this.object = App.getObjectByUuid( json.objectUuid );
+		this.object = App.getObjectByUuid(json.objectUuid);
 		this.attributeName = json.attributeName;
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;

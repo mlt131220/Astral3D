@@ -4,8 +4,8 @@
  * @date   2024/5/18 13:49
  * @description 闪烁着色器材质
  */
-import {DoubleSide, ShaderMaterial,Color} from "three";
-import {useDispatchSignal} from "@/hooks";
+import { DoubleSide, ShaderMaterial, Color } from "three";
+import { useDispatchSignal } from "#/hooks";
 
 const vertex = `
      uniform float uTime;
@@ -28,7 +28,7 @@ const fragment = /*glsl*/`
     }
 `;
 
-export class FlickerShaderMaterial{
+export class FlickerShaderMaterial {
     static _ShaderMaterial: ShaderMaterial;
     static Name = "FlickerShaderMaterial";
 
@@ -47,10 +47,10 @@ export class FlickerShaderMaterial{
         return FlickerShaderMaterial.InstanceShaderMaterial();
     }
 
-    static InstanceShaderMaterial(){
+    static InstanceShaderMaterial() {
         const material = new ShaderMaterial({
             uniforms: {
-                uTime: {value: 1.0},
+                uTime: { value: 1.0 },
                 uHeight: {
                     value: 10,
                 },
@@ -73,13 +73,13 @@ export class FlickerShaderMaterial{
     static Init() {
         FlickerShaderMaterial._ShaderMaterial = FlickerShaderMaterial.InstanceShaderMaterial();
 
-        useDispatchSignal("instantiateShaderMaterial",FlickerShaderMaterial);
+        useDispatchSignal("instantiateShaderMaterial", FlickerShaderMaterial);
 
         return FlickerShaderMaterial._ShaderMaterial;
     }
 
     static Update() {
-        if(!FlickerShaderMaterial._ShaderMaterial) return;
+        if (!FlickerShaderMaterial._ShaderMaterial) return;
 
         FlickerShaderMaterial._ShaderMaterial.uniforms.uTime.value += .02
     }

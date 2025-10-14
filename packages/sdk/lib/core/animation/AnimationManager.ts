@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { useDispatchSignal } from '@/hooks';
-import { escapeRegExp } from "@/utils";
-import App from "@/core/app/App";
+import { useDispatchSignal } from '#/hooks';
+import { escapeRegExp } from "#/utils";
+import App from "#/core/app/App";
 
 let prevActionsInUse = 0, needsUpdate = false;
 export class AnimationManager {
@@ -10,7 +10,7 @@ export class AnimationManager {
     // 场景中的动画action集合
     public actionMap: Map<string, THREE.AnimationAction> = new Map();
 
-    constructor() {}
+    constructor() { }
 
     /**
      * 检查动画剪辑上是否已存在当前object的相应轨道,存在则返回该轨道

@@ -1,4 +1,4 @@
-import {SignalsRegister} from "@/utils/signals/signalRegister";
+import { SignalsRegister } from "#/utils/signals/signalRegister";
 
 interface SignalMethods<T = any> {
 	add(
@@ -94,7 +94,7 @@ export function useAddOnceSignal(
 	listener: (...params: any) => void,
 	listenerContext?: any,
 	priority?: number
-){
+) {
 	SignalsRegister[signalName].addOnce(listener, listenerContext, priority);
 }
 
@@ -106,6 +106,6 @@ export function useRemoveSignal(signalName: string, listener: (...params: any) =
 	SignalsRegister[signalName].remove(listener);
 }
 
-export function useSetSignalActive(signalName: string, active: boolean): void{
+export function useSetSignalActive(signalName: string, active: boolean): void {
 	SignalsRegister[signalName].active = active;
 };

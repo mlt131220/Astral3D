@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import * as _Particle from '@/core/libs/three-nebula';
+import * as _Particle from '#/core/libs/three-nebula';
 
 export class Particles {
   static DotImageUrl = new URL(import.meta.env.BASE_URL + 'resource/textures/dot.png', import.meta.url).href;
@@ -58,7 +58,7 @@ export class Particles {
       .setTotalEmitTimes(Infinity) // 设置发射器的总发射次数
       .setLife(Infinity) // 设置发射器的寿命(毫秒)
 
-    return {emitter,body};
+    return { emitter, body };
   }
 
   // 火焰
@@ -109,7 +109,7 @@ export class Particles {
       .setTotalEmitTimes(Infinity)
       .setLife(Infinity)
 
-    return {emitter,body};
+    return { emitter, body };
   }
 
   // 火线
@@ -167,7 +167,7 @@ export class Particles {
       .setTotalEmitTimes(Infinity)
       .setLife(Infinity)
 
-    return {emitter,body};
+    return { emitter, body };
   }
 
   // 萤火虫
@@ -223,7 +223,7 @@ export class Particles {
       .setTotalEmitTimes(Infinity)
       .setLife(Infinity)
 
-    return {emitter,body};
+    return { emitter, body };
   }
 
   // 烟花
@@ -246,21 +246,21 @@ export class Particles {
       .setRate(
         new _Particle.Rate(
           new _Particle.Span(30, 50),
-          new _Particle.Span(0.05, 0.1) 
+          new _Particle.Span(0.05, 0.1)
         )
-      ) 
+      )
       .setInitializers([
-        new _Particle.Mass(1,1, false, true),
+        new _Particle.Mass(1, 1, false, true),
         new _Particle.Life(1, 3, false, true),
         new _Particle.Body(body),
-        new _Particle.Radius(1, 1, false, true), 
+        new _Particle.Radius(1, 1, false, true),
         position,
         new _Particle.RadialVelocity(new _Particle.Span(50, 80), new _Particle.Vector3D(0, 1, 0), 30),
-      ]) 
+      ])
       .setBehaviours([
-        new _Particle.Scale(new _Particle.Span(2, 2.5), 0, Infinity, _Particle.ease.easeLinear, true), 
+        new _Particle.Scale(new _Particle.Span(2, 2.5), 0, Infinity, _Particle.ease.easeLinear, true),
         new _Particle.Color('#FF0026', '#ffff11', Infinity, _Particle.ease.easeOutSine, true),
-        new _Particle.Force(0, -0.6, 0, Infinity, _Particle.ease.easeLinear, true), 
+        new _Particle.Force(0, -0.6, 0, Infinity, _Particle.ease.easeLinear, true),
         new _Particle.RandomDrift(1, 1, 1, 0.5, Infinity, _Particle.ease.easeLinear),
       ])
       .setPosition({ ...initPosition })
@@ -270,9 +270,9 @@ export class Particles {
         z: 0,
       })
       .emit()
-      .setTotalEmitTimes(Infinity) 
+      .setTotalEmitTimes(Infinity)
       .setLife(Infinity)
 
-    return {emitter,body};
+    return { emitter, body };
   }
 }

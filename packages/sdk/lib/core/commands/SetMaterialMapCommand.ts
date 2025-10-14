@@ -1,6 +1,6 @@
 import { Command } from './Command';
 import { ObjectLoader } from '../loader/ObjectLoader';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -16,35 +16,35 @@ class SetMaterialMapCommand extends Command {
 	private newMap;
 	private mapName;
 
-	constructor( object, mapName, newMap, materialSlot ) {
+	constructor(object, mapName, newMap, materialSlot) {
 		super();
 
 		this.type = 'SetMaterialMapCommand';
 		this.name = `Set material.${mapName}`;
 
 		this.object = object;
-		this.material = App.getObjectMaterial( object, materialSlot );
+		this.material = App.getObjectMaterial(object, materialSlot);
 
-		this.oldMap = ( object !== undefined ) ? this.material[ mapName ] : undefined;
+		this.oldMap = (object !== undefined) ? this.material[mapName] : undefined;
 		this.newMap = newMap;
 
 		this.mapName = mapName;
 	}
 
 	execute() {
-		if ( this.oldMap !== null && this.oldMap !== undefined ) this.oldMap.dispose();
+		if (this.oldMap !== null && this.oldMap !== undefined) this.oldMap.dispose();
 
-		this.material[ this.mapName ] = this.newMap;
+		this.material[this.mapName] = this.newMap;
 		this.material.needsUpdate = true;
-		
-		useDispatchSignal("materialChanged",this.material)
+
+		useDispatchSignal("materialChanged", this.material)
 	}
 
 	undo() {
-		this.material[ this.mapName ] = this.oldMap;
+		this.material[this.mapName] = this.oldMap;
 		this.material.needsUpdate = true;
 
-		useDispatchSignal("materialChanged",this.material)
+		useDispatchSignal("materialChanged", this.material)
 	}
 
 	toJSON() {
@@ -52,16 +52,16 @@ class SetMaterialMapCommand extends Command {
 
 		output.objectUuid = this.object.uuid;
 		output.mapName = this.mapName;
-		output.newMap = serializeMap( this.newMap );
-		output.oldMap = serializeMap( this.oldMap );
+		output.newMap = serializeMap(this.newMap);
+		output.oldMap = serializeMap(this.oldMap);
 
 		return output;
 
 		// serializes a map (THREE.Texture)
 
-		function serializeMap( map ) {
+		function serializeMap(map) {
 
-			if ( map === null || map === undefined ) return null;
+			if (map === null || map === undefined) return null;
 
 			const meta = {
 				geometries: {},
@@ -70,9 +70,9 @@ class SetMaterialMapCommand extends Command {
 				images: {}
 			};
 
-			const json = map.toJSON( meta );
-			const images = extractFromCache( meta.images );
-			if ( images.length > 0 ) json.images = images;
+			const json = map.toJSON(meta);
+			const images = extractFromCache(meta.images);
+			if (images.length > 0) json.images = images;
 			json.sourceFile = map.sourceFile;
 
 			return json;
@@ -84,14 +84,14 @@ class SetMaterialMapCommand extends Command {
 		// extract data from the cache hash
 		// remove metadata on each item
 		// and return as array
-		function extractFromCache( cache ) {
+		function extractFromCache(cache) {
 
-			const values:any = [];
-			for ( const key in cache ) {
+			const values: any = [];
+			for (const key in cache) {
 
-				const data = cache[ key ];
+				const data = cache[key];
 				delete data.metadata;
-				values.push( data );
+				values.push(data);
 
 			}
 
@@ -99,21 +99,21 @@ class SetMaterialMapCommand extends Command {
 		}
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
-		this.object = App.getObjectByUuid( json.objectUuid );
+		this.object = App.getObjectByUuid(json.objectUuid);
 		this.mapName = json.mapName;
-		this.oldMap = parseTexture( json.oldMap );
-		this.newMap = parseTexture( json.newMap );
+		this.oldMap = parseTexture(json.oldMap);
+		this.newMap = parseTexture(json.newMap);
 
-		function parseTexture( json ) {
+		function parseTexture(json) {
 			let map;
-			if ( json !== null ) {
+			if (json !== null) {
 				const loader = new ObjectLoader();
-				const images = loader.parseImages( json.images,()=>{} );
-				const textures = loader.parseTextures( [ json ], images );
-				map = textures[ json.uuid ];
+				const images = loader.parseImages(json.images, () => { });
+				const textures = loader.parseTextures([json], images);
+				map = textures[json.uuid];
 				map.sourceFile = json.sourceFile;
 			}
 

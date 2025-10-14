@@ -5,26 +5,26 @@
  * @description 后处理
  */
 import * as THREE from "three";
-import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer.js";
-import {Pass} from "three/examples/jsm/postprocessing/Pass.js";
-import {OutlinePass} from "three/examples/jsm/postprocessing/OutlinePass.js";
-import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass.js";
-import {FXAAShader} from 'three/examples/jsm/shaders/FXAAShader.js';
-import {RenderPass} from 'three/examples/jsm/postprocessing/RenderPass.js';
-import {GammaCorrectionShader} from "three/examples/jsm/shaders/GammaCorrectionShader.js";
-import {UnrealBloomPass} from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import {BokehPass} from 'three/examples/jsm/postprocessing/BokehPass.js';
-import {RenderPixelatedPass} from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js';
-import {HalftonePass} from 'three/examples/jsm/postprocessing/HalftonePass.js';
-import {LUTPass} from 'three/examples/jsm/postprocessing/LUTPass.js';
-import {LUTCubeLoader} from 'three/examples/jsm/loaders/LUTCubeLoader.js';
-import {LUT3dlLoader} from 'three/examples/jsm/loaders/LUT3dlLoader.js';
-import {LUTImageLoader} from 'three/examples/jsm/loaders/LUTImageLoader.js';
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { GammaCorrectionShader } from "three/examples/jsm/shaders/GammaCorrectionShader.js";
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
+import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js';
+import { HalftonePass } from 'three/examples/jsm/postprocessing/HalftonePass.js';
+import { LUTPass } from 'three/examples/jsm/postprocessing/LUTPass.js';
+import { LUTCubeLoader } from 'three/examples/jsm/loaders/LUTCubeLoader.js';
+import { LUT3dlLoader } from 'three/examples/jsm/loaders/LUT3dlLoader.js';
+import { LUTImageLoader } from 'three/examples/jsm/loaders/LUTImageLoader.js';
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
 // import {OutputPass} from "three/examples/jsm/postprocessing/OutputPass.js";
-import {useAddSignal} from "@/hooks";
+import { useAddSignal } from "#/hooks";
 import Viewer from "../Viewer";
-import App from "@/core/app/App";
+import App from "#/core/app/App";
 
 type supportPass = Pass | OutlinePass | ShaderPass | UnrealBloomPass | BokehPass | RenderPixelatedPass | HalftonePass;
 
@@ -67,7 +67,7 @@ export class Effect {
             this.clear();
         }
 
-        const {composer, outlinePass} = this.initComposer();
+        const { composer, outlinePass } = this.initComposer();
         this.composer = composer as EffectComposer;
         this.outlinePass = outlinePass;
 
@@ -129,7 +129,7 @@ export class Effect {
         // const outputPass = new OutputPass();
         // composer.addPass(outputPass);
 
-        return {composer, outlinePass};
+        return { composer, outlinePass };
     }
 
     /**
@@ -306,7 +306,7 @@ export class Effect {
     /**
      * 运动残影
      */
-    get Afterimage():AfterimagePass{
+    get Afterimage(): AfterimagePass {
         if (Effect.PassMap.has("Afterimage")) {
             return Effect.PassMap.get("Afterimage") as AfterimagePass;
         }

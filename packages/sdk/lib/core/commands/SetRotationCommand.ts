@@ -1,6 +1,6 @@
 import { Euler } from 'three';
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -14,7 +14,7 @@ class SetRotationCommand extends Command {
 	public oldValue;
 	public newValue;
 
-	constructor(object, newValue, optionaloldValue ) {
+	constructor(object, newValue, optionaloldValue) {
 		super();
 
 		this.type = 'SetRotationCommand';
@@ -23,30 +23,30 @@ class SetRotationCommand extends Command {
 
 		this.object = object;
 
-		if ( object !== undefined && newValue !== undefined ) {
+		if (object !== undefined && newValue !== undefined) {
 			this.oldValue = object.rotation.clone();
 			this.newValue = newValue.clone();
 		}
 
-		if ( optionaloldValue !== undefined ) {
+		if (optionaloldValue !== undefined) {
 			this.oldValue = optionaloldValue.clone();
 		}
 	}
 
 	execute() {
-		this.object.rotation.copy( this.newValue );
-		this.object.updateMatrixWorld( true );
-		useDispatchSignal("objectChanged",this.object);
+		this.object.rotation.copy(this.newValue);
+		this.object.updateMatrixWorld(true);
+		useDispatchSignal("objectChanged", this.object);
 	}
 
 	undo() {
-		this.object.rotation.copy( this.oldValue );
-		this.object.updateMatrixWorld( true );
-		useDispatchSignal("objectChanged",this.object);
+		this.object.rotation.copy(this.oldValue);
+		this.object.updateMatrixWorld(true);
+		useDispatchSignal("objectChanged", this.object);
 	}
 
-	update( command ) {
-		this.newValue.copy( command.newValue );
+	update(command) {
+		this.newValue.copy(command.newValue);
 	}
 
 	toJSON() {
@@ -59,12 +59,12 @@ class SetRotationCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
-		this.object = App.getObjectByUuid( json.objectUuid );
-		this.oldValue = new Euler().fromArray( json.oldValue );
-		this.newValue = new Euler().fromArray( json.newValue );
+		this.object = App.getObjectByUuid(json.objectUuid);
+		this.oldValue = new Euler().fromArray(json.oldValue);
+		this.newValue = new Euler().fromArray(json.newValue);
 	}
 }
 

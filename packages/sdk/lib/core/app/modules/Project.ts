@@ -5,10 +5,10 @@
  * @description 当前项目相关信息
  */
 import * as THREE from 'three';
-import {getNestedProperty} from "@/utils";
-import type {App} from "../App";
-import {useRemoveSignal, useAddSignal, useDispatchSignal} from '@/hooks';
-import {FPS_OPTIONS} from "@/constant";
+import { getNestedProperty } from "#/utils";
+import type { App } from "../App";
+import { useRemoveSignal, useAddSignal, useDispatchSignal } from '#/hooks';
+import { FPS_OPTIONS } from "#/constant";
 
 export const defaultProjectInfo = (): IAppProject.Info => ({
     // 项目运行是否启用xr
@@ -232,7 +232,7 @@ class Project {
      * @param {unknown} value 配置项的值
      * @param {boolean} executeAction 是否自动执行相应处理
      */
-    setKey(key: string, value: unknown,executeAction: boolean = true) {
+    setKey(key: string, value: unknown, executeAction: boolean = true) {
         const keys = key.split(".");
 
         if (keys.length === 1) {
@@ -250,11 +250,11 @@ class Project {
         }
 
         /* 执行相应处理 */
-        if(!executeAction || ["xr","sceneInfo","drawing"].includes(keys[0])) return;
+        if (!executeAction || ["xr", "sceneInfo", "drawing"].includes(keys[0])) return;
 
         const secondProperty = keys[1];
         // 如果setKey传入的是第一层级的变更且不是特殊单层处理的属性，则遍历为第二层级递归以执行相应处理
-        if(!secondProperty && !["renderer"].includes(key)) {
+        if (!secondProperty && !["renderer"].includes(key)) {
             const propertyValue = this.info[key];
 
             Object.keys(propertyValue).forEach(secondKey => {
@@ -265,9 +265,9 @@ class Project {
         }
 
         if (key.startsWith("renderer")) {
-            if(!this.app.viewer) return;
+            if (!this.app.viewer) return;
 
-            if (["renderer.antialias","renderer"].includes(key)) {
+            if (["renderer.antialias", "renderer"].includes(key)) {
                 this.app.viewer.createEngine();
             } else {
                 this.app.viewer.renderer.shadowMap.enabled = this.info.renderer.shadow.enabled;
@@ -298,23 +298,23 @@ class Project {
                     this.app.csm.updateLightIntensity(this.info.csm.lightIntensity);
                     break;
                 case "csm.lightDirectionX":
-                    this.app.csm.updateLightDirection('x',this.info.csm.lightDirectionX);
+                    this.app.csm.updateLightDirection('x', this.info.csm.lightDirectionX);
                     break;
                 case "csm.lightDirectionY":
-                    this.app.csm.updateLightDirection('y',this.info.csm.lightDirectionY);
+                    this.app.csm.updateLightDirection('y', this.info.csm.lightDirectionY);
                     break;
                 case "csm.lightDirectionZ":
-                    this.app.csm.updateLightDirection('z',this.info.csm.lightDirectionZ);
+                    this.app.csm.updateLightDirection('z', this.info.csm.lightDirectionZ);
                     break;
             }
-        }else if(key.startsWith("effect")){
-            if(key === "effect.enabled"){
-                useDispatchSignal("effectEnabledChange",this.info.effect.enabled);
-            }else{
-                useDispatchSignal("effectPassConfigChange",secondProperty,this.info.effect[secondProperty]);
+        } else if (key.startsWith("effect")) {
+            if (key === "effect.enabled") {
+                useDispatchSignal("effectEnabledChange", this.info.effect.enabled);
+            } else {
+                useDispatchSignal("effectPassConfigChange", secondProperty, this.info.effect[secondProperty]);
             }
-        }else if(key.startsWith("weather")){
-            switch (key){
+        } else if (key.startsWith("weather")) {
+            switch (key) {
                 case "weather.fog":
                     useDispatchSignal("sceneFogSettingsChanged");
                     break;
@@ -400,4 +400,4 @@ class Project {
     }
 }
 
-export {Project};
+export { Project };

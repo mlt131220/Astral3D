@@ -5,14 +5,14 @@
  * @description 广告牌对象
  */
 import * as THREE from 'three'
-import {POSITION} from "@/constant";
+import { POSITION } from "#/constant";
 import BillboardTexture from "./texture/BillboardTexture";
-import {deepAssign} from "@/utils";
+import { deepAssign } from "#/utils";
 
 export interface BillboardEventMap extends THREE.Object3DEventMap {
-    imgLoaded: { url:string };
+    imgLoaded: { url: string };
 
-    redraw: { url:string }
+    redraw: { url: string }
 }
 
 export const getDefaultBillboardOptions = () => ({
@@ -118,7 +118,7 @@ export default class Billboard extends THREE.Sprite<BillboardEventMap> {
             this.material.needsUpdate = true;
 
             // @ts-ignore
-            this.dispatchEvent({type: "imgLoaded", url: event.url})
+            this.dispatchEvent({ type: "imgLoaded", url: event.url })
         })
         // @ts-ignore
         texture.addEventListener("redraw", (event) => {
@@ -137,7 +137,7 @@ export default class Billboard extends THREE.Sprite<BillboardEventMap> {
             this.geometry = new THREE.PlaneGeometry(wh.width, wh.height);
 
             // @ts-ignore
-            this.dispatchEvent({type: "redraw", url: event.url})
+            this.dispatchEvent({ type: "redraw", url: event.url })
         })
 
         this.position.set(this.options.position[0], this.options.position[1], this.options.position[2]);

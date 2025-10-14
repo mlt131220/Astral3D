@@ -7,11 +7,11 @@ import {
     TimelineKeyframe,
     TimelineInteractionMode,
     TimelineKeyframeChangedEvent, TimelineClickEvent
-} from "@/core/libs/astral-timeline/animation-timeline";
-import {useAddSignal, useDispatchSignal} from "@/hooks";
-import { getParentPath,debounce, deepAssign, getNestedProperty } from "@/utils";
-import { KeyframeTrackFactory } from "@/core/animation/AnimationManager";
-import App from "@/core/app/App";
+} from "#/core/libs/astral-timeline/animation-timeline";
+import { useAddSignal, useDispatchSignal } from "#/hooks";
+import { getParentPath, debounce, deepAssign, getNestedProperty } from "#/utils";
+import { KeyframeTrackFactory } from "#/core/animation/AnimationManager";
+import App from "#/core/app/App";
 
 export interface ITimelineKeyframe extends TimelineKeyframe {
     data: number[] | boolean[]
@@ -56,7 +56,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
         this.container = container;
         this.outlineContainer = outlineContainer;
 
-        this.model = {rows: []} as ITimelineModel;
+        this.model = { rows: [] } as ITimelineModel;
         this.options = {
             id: container,
             headerHeight: 40,
@@ -196,7 +196,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
 
             if (args.elements.length === 0) return;
 
-            this.dispatchEvent({type: "contextmenu", args: args});
+            this.dispatchEvent({ type: "contextmenu", args: args });
         });
 
         this.timeline.onMouseDown((args) => {
@@ -205,7 +205,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
 
             if (e.button === 2) return;
 
-            this.dispatchEvent({type: "mousedown", args: args});
+            this.dispatchEvent({ type: "mousedown", args: args });
         });
 
         this.timeline.onTimeChanged((args) => {
@@ -231,7 +231,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
             this.bindAction.getMixer().update(0.016);
             // this.bindAction.getRoot() 获取到的对象可能是editor.locked对象，需要获取正在操作的对象
 
-            if (App.selected){
+            if (App.selected) {
                 useDispatchSignal("objectChanged", App.selected);
                 useDispatchSignal("materialChanged", App.selected.material);
             }
@@ -318,7 +318,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
         // 更新剪辑时间
         clip.resetDuration();
         // 重新剪辑action
-        this.bindAction = App.animationManager.reClipAction(this.bindAction,this.timeline.getTime() / 1000) as THREE.AnimationAction;
+        this.bindAction = App.animationManager.reClipAction(this.bindAction, this.timeline.getTime() / 1000) as THREE.AnimationAction;
 
         this.model.rows.splice(this.model.rows.indexOf(row), 1);
 
@@ -341,7 +341,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
         const currentTime = this.timeline.getTime() / 1000;
         const currentClip = this.bindAction.getClip();
         // this.bindAction.getRoot() 获取到的对象可能是editor.locked对象，需要获取正在操作的对象
-        let val = getNestedProperty(App.selected,attr);
+        let val = getNestedProperty(App.selected, attr);
 
         const insertValue = (valueTrack: number[] | boolean[], index: number, delLength: number = 0) => {
             let keyData: any[];
@@ -398,7 +398,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
                 case "material.emissive":
                 case "material.sheenColor":
                 case "material.attenuationColor":
-                    if(!(val instanceof THREE.Color)){
+                    if (!(val instanceof THREE.Color)) {
                         val = new THREE.Color(val);
                     }
 
@@ -443,7 +443,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
                 _times.unshift(0);
                 _values.unshift(...keyData);
                 _row.keyframes?.unshift({
-                    val:0,
+                    val: 0,
                     data: keyData,
                     selected: true
                 })
@@ -513,7 +513,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
         // 更新剪辑时间
         currentClip.resetDuration();
         // 重新剪辑action
-        this.bindAction = App.animationManager.reClipAction(this.bindAction,currentTime) as THREE.AnimationAction;
+        this.bindAction = App.animationManager.reClipAction(this.bindAction, currentTime) as THREE.AnimationAction;
 
         // 刷新
         this.timeline.redraw();
@@ -524,7 +524,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
     /**
      * 关键帧被改变时触发（关键帧被拖动）
      */
-    onKeyframeChanged(args:TimelineKeyframeChangedEvent) {
+    onKeyframeChanged(args: TimelineKeyframeChangedEvent) {
         const row = args.target?.row as ITimelineRow;
         const track = row.track;
         if (!this.bindAction || !track || !row.keyframes?.length) return;
@@ -547,7 +547,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
         // 更新剪辑时间
         clip.resetDuration();
         // 重新剪辑action
-        this.bindAction = App.animationManager.reClipAction(this.bindAction,this.timeline.getTime() / 1000) as THREE.AnimationAction;
+        this.bindAction = App.animationManager.reClipAction(this.bindAction, this.timeline.getTime() / 1000) as THREE.AnimationAction;
 
         // 刷新
         this.timeline.redraw();
@@ -563,7 +563,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
         const selectedRows = this.model.rows.filter(row => row.keyframes?.some(kf => kf.selected));
 
         selectedRows.forEach(row => {
-            if(!row.keyframes) return;
+            if (!row.keyframes) return;
 
             // 先删除关键帧
             row.keyframes = row.keyframes.filter(kf => !kf.selected);
@@ -575,7 +575,7 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
             }
 
             // @ts-ignore
-            this.onKeyframeChanged({target:{row: row}});
+            this.onKeyframeChanged({ target: { row: row } });
         });
     }
 
@@ -664,4 +664,4 @@ class TimelineTrack extends THREE.EventDispatcher<CustomEvents> {
     }
 }
 
-export {TimelineTrack}
+export { TimelineTrack }

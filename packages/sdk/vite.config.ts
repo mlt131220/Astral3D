@@ -1,14 +1,14 @@
-import {defineConfig, loadEnv} from 'vite';
-import {dirname, resolve} from 'node:path';
-import {fileURLToPath} from 'node:url';
+import { defineConfig, loadEnv } from 'vite';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import dts from 'vite-plugin-dts';
-import {wrapperEnv, createPlugins} from "@astral3d/build-vite-plugins";
+import { wrapperEnv, createPlugins } from "@astral3d/build-vite-plugins";
 
 // @ts-ignore
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // @ts-ignore
-export default defineConfig(async ({mode, command}) => {
+export default defineConfig(async ({ mode, command }) => {
     const root = process.cwd();
     const env = loadEnv(mode, root);
     //LoadEnv读取的布尔类型是一个字符串。此函数可以转换为布尔类型
@@ -31,7 +31,7 @@ export default defineConfig(async ({mode, command}) => {
             deleteOriginFile: VITE_BUILD_COMPRESS_DELETE_ORIGIN_FILE,
         },
         enableAnalyze: VITE_ENABLE_ANALYZE,
-        enableConfig:VITE_ENABLE_CONFIG_GENERATE
+        enableConfig: VITE_ENABLE_CONFIG_GENERATE
     });
 
     return {
@@ -66,7 +66,7 @@ export default defineConfig(async ({mode, command}) => {
         // 路径别名
         resolve: {
             alias: {
-                '@': resolve(__dirname, './lib')
+                '#': resolve(__dirname, './lib')
             },
             extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
         },

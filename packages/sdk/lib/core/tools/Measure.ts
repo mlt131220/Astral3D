@@ -1,13 +1,13 @@
 import * as THREE from "three";
-import {CSS2DObject} from "three/examples/jsm/renderers/CSS2DRenderer.js";
-import {useDispatchSignal} from "@/hooks";
-import Viewer from "@/core/viewer/Viewer";
+import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
+import { useDispatchSignal } from "#/hooks";
+import Viewer from "#/core/viewer/Viewer";
 
-export interface MeasureEventMap{
+export interface MeasureEventMap {
     /**
      * 完成绘制触发
      */
-    complete: {object: THREE.Group};
+    complete: { object: THREE.Group };
 }
 
 export enum MeasureMode {
@@ -21,7 +21,7 @@ let pdFn, pmFn, puFn, kdFn;
 /**
  * Measure class
  */
-class Measure extends THREE.EventDispatcher<MeasureEventMap>{
+class Measure extends THREE.EventDispatcher<MeasureEventMap> {
     static LINE_MATERIAL = new THREE.LineBasicMaterial({
         color: 0xE63C17,
         linewidth: 2,
@@ -59,13 +59,13 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
     protected pointArray: THREE.Vector3[] = []; // 存储点
     protected lastClickTime?: number; //保存上次点击时间，以便检测双击事件
 
-    protected viewer:Viewer;
+    protected viewer: Viewer;
     // 所有测绘内容组
     public measureGroup: THREE.Group;
     // 当前测绘内容组
     protected group: THREE.Group;
 
-    constructor(viewer:Viewer, mode: MeasureMode = MeasureMode.Distance) {
+    constructor(viewer: Viewer, mode: MeasureMode = MeasureMode.Distance) {
         super();
 
         this.mode = mode;
@@ -83,7 +83,7 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
         this.viewer.modules.dragControl.setMeasureInstance(this);
     }
 
-    get domElement(): HTMLCanvasElement{
+    get domElement(): HTMLCanvasElement {
         return this.viewer.renderer.domElement;
     }
 
@@ -157,9 +157,9 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
             switch (child.userData.type) {
                 case "measure-marker":
                     // 当前点正在操作，不加入
-                    if(child.uuid !== point.uuid) {
+                    if (child.uuid !== point.uuid) {
                         this.pointArray[child.userData.pointIndex] = child.userData.point;
-                    }else{
+                    } else {
                         this.tempPointMarker = child as THREE.Sprite;
                     }
                     break;
@@ -198,7 +198,7 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
             for (let i = g.children.length - 1; i >= 0; i--) {
                 const c = g.children[i];
 
-                if(c.userData.type == "measure-marker"){
+                if (c.userData.type == "measure-marker") {
                     // 从拖拽控制器移除
                     this.viewer.modules.dragControl.setDragObjects([c], "remove");
                 }
@@ -224,11 +224,11 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
     /**
      * 新版本threejs中，BufferGeometry.setFromPoints方法不在支持添加点位置，需要手动设置顶点属性
      */
-    setFromPoints(geo: THREE.BufferGeometry, points: THREE.Vector3[]){
-        const position:number[] = [];
+    setFromPoints(geo: THREE.BufferGeometry, points: THREE.Vector3[]) {
+        const position: number[] = [];
 
-        for ( let i = 0, l = points.length; i < l; i++) {
-            const point = points[ i ];
+        for (let i = 0, l = points.length; i < l; i++) {
+            const point = points[i];
             position.push(point.x, point.y, point.z);
         }
 
@@ -396,21 +396,21 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
         // 启用拖拽控制器
         this.viewer.modules.dragControl.dragControls.enabled = true;
 
-        this.dispatchEvent({type:"complete",object:this.group})
+        this.dispatchEvent({ type: "complete", object: this.group })
     }
 
     // 清除当前group label
     clearCurrentLabel() {
-        for (let i = this.group.children.length - 1; i >=0 ; i--) {
+        for (let i = this.group.children.length - 1; i >= 0; i--) {
             const c = this.group.children[i];
-            if(c.userData.type === "label"){
+            if (c.userData.type === "label") {
                 this.group.remove(c);
             }
         }
     }
 
     // 获取按下对应三维位置
-    getClosestIntersection(e: MouseEvent){
+    getClosestIntersection(e: MouseEvent) {
         const _point = new THREE.Vector2();
         _point.x = e.offsetX / this.viewer.renderer.domElement.offsetWidth;
         _point.y = e.offsetY / this.viewer.renderer.domElement.offsetHeight;
@@ -451,10 +451,10 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
 
             // 如果是面积测量，且当前点是最后一个点或者第一个点
             // 则需要重置其中一个点，才能有两条线拖动效果
-            if(this.mode === MeasureMode.Area){
-                if(!lastPoint){
+            if (this.mode === MeasureMode.Area) {
+                if (!lastPoint) {
                     lastPoint = this.pointArray[this.pointArray.length - 1];
-                }else if(!startPoint){
+                } else if (!startPoint) {
                     startPoint = this.pointArray[0];
                 }
             }
@@ -462,21 +462,21 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
             if (startPoint && lastPoint) {
                 this.setFromPoints(geom, [lastPoint, point, startPoint]);
             } else {
-                this.setFromPoints(geom,[startPoint || lastPoint, point]);
+                this.setFromPoints(geom, [startPoint || lastPoint, point]);
             }
         }
     }
 
     // 重绘完成
     redrawComplete() {
-        if(!this.tempPointMarker) return;
+        if (!this.tempPointMarker) return;
 
         const point = this.tempPointMarker.userData.point;
         this.pointArray[this.tempPointMarker.userData.pointIndex] = point;
         const count = this.pointArray.length;
 
         if (this.polyline) {
-            this.setFromPoints(this.polyline.geometry,this.pointArray);
+            this.setFromPoints(this.polyline.geometry, this.pointArray);
             // 如果是距离测量，则清除group中已有的label，再重新创建
             if (this.mode === MeasureMode.Distance && count > 1) {
                 this.clearCurrentLabel();
@@ -484,7 +484,7 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
                 for (let i = 0; i < count - 1; i++) {
                     const p0 = this.pointArray[i];
                     const p1 = this.pointArray[i + 1];
-                    if(!p0 || !p1) continue;
+                    if (!p0 || !p1) continue;
                     const dist = p0.distanceTo(p1);
                     const label = `${this.numberToString(dist)} ${this.getUnitString()}`;
                     const position = new THREE.Vector3((p0.x + p1.x) / 2, (p0.y + p1.y) / 2, (p0.z + p1.z) / 2);
@@ -502,10 +502,10 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
             const vertices = this.faces.userData.vertices;
             // vertices.push(point);
             vertices[this.tempPointMarker.userData.pointIndex] = point;
-            this.setFromPoints(geom,vertices);
+            this.setFromPoints(geom, vertices);
             const len = vertices.length;
             if (len > 2) {
-                const indexArray:number[] = [];
+                const indexArray: number[] = [];
                 for (let i = 1; i < len - 1; ++i) {
                     indexArray.push(0, i, i + 1);
                 }
@@ -533,7 +533,7 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
 
     // 鼠标移动，创建对应的临时点与线
     mousemove = (e: MouseEvent) => {
-        if(this.isCompleted) return;
+        if (this.isCompleted) return;
 
         this.mouseMoved = true;
 
@@ -558,9 +558,9 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
             const startPoint = this.pointArray[0];
             const lastPoint = this.pointArray[this.pointArray.length - 1];
             if (this.mode === MeasureMode.Area) {
-                this.setFromPoints(geom,[lastPoint, point, startPoint]);
+                this.setFromPoints(geom, [lastPoint, point, startPoint]);
             } else {
-                this.setFromPoints(geom,[lastPoint, point]);
+                this.setFromPoints(geom, [lastPoint, point]);
             }
             if (this.mode === MeasureMode.Distance) {
                 const dist = p0.distanceTo(point);
@@ -595,7 +595,7 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
             return;
         }
 
-        const point =this.getClosestIntersection(e);
+        const point = this.getClosestIntersection(e);
         if (!point) {
             return;
         }
@@ -630,10 +630,10 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
             const geom = this.faces.geometry as THREE.BufferGeometry;
             const vertices = this.faces.userData.vertices;
             vertices.push(point);
-            this.setFromPoints(geom,vertices);
+            this.setFromPoints(geom, vertices);
             const len = vertices.length;
             if (len > 2) {
-                const indexArray:number[] = [];
+                const indexArray: number[] = [];
                 for (let i = 1; i < len - 1; ++i) {
                     indexArray.push(0, i, i + 1);
                 }
@@ -710,7 +710,7 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
         const curve = new THREE.QuadraticBezierCurve3(p0, p1, p2);
         const points = curve.getPoints(4);
         const geometry = new THREE.BufferGeometry();
-        this.setFromPoints(geometry,points)
+        this.setFromPoints(geometry, points)
         const obj = new THREE.Line(geometry, Measure.LINE_MATERIAL);
         obj.name = Measure.OBJ_NAME;
         obj.userData = {
@@ -808,4 +808,4 @@ class Measure extends THREE.EventDispatcher<MeasureEventMap>{
     }
 }
 
-export {Measure};
+export { Measure };

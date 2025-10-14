@@ -51,7 +51,7 @@ import { TimelineEvents } from './enums/timelineEvents';
 import { TimelineScrollSource } from './enums/timelineScrollSource';
 import { defaultTimelineConsts } from './settings/defaults/defaultTimelineConsts';
 import { defaultTimelineOptions } from './settings/defaults/defaultTimelineOptions';
-import { remToPxNumber } from "@/utils";
+import { remToPxNumber } from "#/utils";
 
 export class Timeline extends TimelineEventsEmitter {
     /**
@@ -455,8 +455,8 @@ export class Timeline extends TimelineEventsEmitter {
             this.scrollLeft = newScrollLeft;
 
             this.emit(TimelineEvents.Zoom, {
-              zoom: this._currentZoom,
-              zoomCenter: zoomCenter
+                zoom: this._currentZoom,
+                zoomCenter: zoomCenter
             });
 
             this.redraw();
@@ -564,7 +564,7 @@ export class Timeline extends TimelineEventsEmitter {
      */
     _handleMouseDownEvent = (args: MouseEvent | TouchEvent): void => {
         // 20250306: 右键点击不触发mousedown
-        if((<MouseEvent>args).button === 2) return;
+        if ((<MouseEvent>args).button === 2) return;
 
         // Prevent drag of the canvas if canvas is selected as text:
         TimelineUtils.clearBrowserSelection();
@@ -1363,7 +1363,7 @@ export class Timeline extends TimelineEventsEmitter {
         const isRight = x >= this._canvasClientWidth() - bounds;
         const isTop = y <= bounds;
         const isBottom = y >= this._canvasClientHeight() - bounds;
-        let newWidth:number | null = null;
+        let newWidth: number | null = null;
         let newHeight: number | null = null;
         if (isLeft || isRight || isTop || isBottom) {
             // Auto move init

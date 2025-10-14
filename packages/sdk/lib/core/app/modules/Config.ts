@@ -4,9 +4,9 @@
  * @date   2025/4/26 13:59
  * @description 应用的全局配置，会存储在本地缓存
  */
-import {Storage} from "./Storage";
-import {deepAssign, getNestedProperty} from "@/utils";
-import {ROAMING_CHARACTERS} from "@/constant";
+import { Storage } from "./Storage";
+import { deepAssign, getNestedProperty } from "#/utils";
+import { ROAMING_CHARACTERS } from "#/constant";
 
 class Config {
     protected storage: Storage;
@@ -39,8 +39,8 @@ class Config {
     /**
      * 设置初始配置
      */
-    setConfig(_config:Record<string, any>){
-        deepAssign(this.config,_config);
+    setConfig(_config: Record<string, any>) {
+        deepAssign(this.config, _config);
 
         this.syncStorage();
     }
@@ -48,20 +48,20 @@ class Config {
     /**
      * 和本地存储中的配置同步
      */
-    syncStorage(){
+    syncStorage() {
         for (let key of Object.keys(this.config)) {
             this.storage.getConfigItem(key).then(_value => {
-                if(_value === null){
+                if (_value === null) {
                     this.storage.setConfigItem(key, this.config[key])
-                }else{
+                } else {
                     let newVal = _value;
                     // 有可能会在代码开发过程中增加新的配置项
-                    if(this.config[key] && typeof this.config[key] === "object"){
-                        newVal = Object.assign({},this.config[key],_value);
+                    if (this.config[key] && typeof this.config[key] === "object") {
+                        newVal = Object.assign({}, this.config[key], _value);
                     }
                     this.config[key] = newVal;
 
-                    if(newVal !== _value){
+                    if (newVal !== _value) {
                         this.storage.setConfigItem(key, newVal)
                     }
                 }
@@ -75,8 +75,8 @@ class Config {
      * 获取配置
      * @param {string} key 可以多层级，需用.分割，如a.b.c
      */
-    getKey(key:string): any {
-        return getNestedProperty(this.config,key);
+    getKey(key: string): any {
+        return getNestedProperty(this.config, key);
     }
 
     /**
@@ -84,26 +84,26 @@ class Config {
      * @param {string} key 可以多层级，需用.分割，如a.b.c
      * @param {unknown} value 配置项的值
      */
-    setKey(key:string,value:unknown) {
+    setKey(key: string, value: unknown) {
         const keys = key.split(".");
 
-        if(keys.length === 1){
+        if (keys.length === 1) {
             this.config[key] = value;
-            this.storage.setConfigItem(key,value);
+            this.storage.setConfigItem(key, value);
 
             return;
         }
 
         let obj = this.config;
-        for (let i = 0; i < keys.length; i++){
-            if(keys.length - i === 1){
+        for (let i = 0; i < keys.length; i++) {
+            if (keys.length - i === 1) {
                 obj[keys[i]] = value;
                 break;
             }
 
             obj = obj[keys[i]];
         }
-        this.storage.setConfigItem(keys[0],this.config[keys[0]]);
+        this.storage.setConfigItem(keys[0], this.config[keys[0]]);
     }
 
     /**
@@ -119,7 +119,7 @@ class Config {
      * @param {string} key
      * @param {any} value
      */
-    setShortcutItem(key: string,value:any) {
+    setShortcutItem(key: string, value: any) {
         this.config.shortcuts[key] = value;
         return this.storage.setConfigItem("shortcuts", this.config.shortcuts)
     }
@@ -131,4 +131,4 @@ class Config {
     }
 }
 
-export {Config};
+export { Config };

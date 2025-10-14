@@ -7,31 +7,31 @@
 import * as THREE from 'three';
 import CameraControls from 'camera-controls';
 import { Timer } from 'three/examples/jsm/misc/Timer.js';
-import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer.js";
-import {PreviewOptions} from "@/core/preview/PreviewOptions.ts";
-import Loader from "@/core/loader/Loader.ts";
-import {createDivContainer, deepAssign, parseMaterialZip} from "@/utils";
-import {getDefaultBillboardOptions} from "@/core/objects";
-import {POSITION} from "@/constant";
-import {Emitter} from '@/core/libs/three-nebula';
-import ParticleEmitter from "@/core/objects/ParticleEmitter.ts"
-import Billboard from "@/core/objects/Billboard.ts";
+import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
+import { PreviewOptions } from "#/core/preview/PreviewOptions.ts";
+import Loader from "#/core/loader/Loader.ts";
+import { createDivContainer, deepAssign, parseMaterialZip } from "#/utils";
+import { getDefaultBillboardOptions } from "#/core/objects";
+import { POSITION } from "#/constant";
+import { Emitter } from '#/core/libs/three-nebula';
+import ParticleEmitter from "#/core/objects/ParticleEmitter.ts"
+import Billboard from "#/core/objects/Billboard.ts";
 import Tiles from "../objects/Tile.ts";
-import {focusObject} from "@/utils/scene/controls.ts";
-import {ParticleSystem,TilesManage} from "@/core/viewer/modules";
+import { focusObject } from "#/utils/scene/controls.ts";
+import { ParticleSystem, TilesManage } from "#/core/viewer/modules";
 
 export interface PreviewerEventMap {
     // 场景当前动画帧循环完成之后渲染之前触发，每一次渲染执行一次
-    beforeRender: { };
+    beforeRender: {};
 
     // 场景当前帧渲染完成之后触发，每一次渲染执行一次
-    afterRender: {  };
+    afterRender: {};
 }
 
 export interface PreviewerModules {
     controls: CameraControls,
     particleSystem: ParticleSystem,
-    tilesManage:TilesManage,
+    tilesManage: TilesManage,
 }
 
 CameraControls.install({
@@ -48,7 +48,7 @@ CameraControls.install({
     }
 });
 
-export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
+export default class Preview extends THREE.EventDispatcher<PreviewerEventMap> {
     public _container: HTMLElement;
     public options: IPreviewSetting;
     public renderer: THREE.WebGLRenderer;
@@ -69,7 +69,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
         this.options = PreviewOptions();
         deepAssign(this.options, options);
 
-        const {camera, scene, renderer,css3DRenderer} = this.basicCreation();
+        const { camera, scene, renderer, css3DRenderer } = this.basicCreation();
         this.camera = camera;
         this.scene = scene;
         this.renderer = renderer;
@@ -79,7 +79,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
 
         this.modules = this.initModules();
 
-        this.loadEnv({setBg:true});
+        this.loadEnv({ setBg: true });
 
         this.renderer.setAnimationLoop(this.animate.bind(this));
 
@@ -94,7 +94,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
     set container(container: HTMLElement) {
         this._container.removeChild(this.renderer.domElement);
 
-        if(this.resizeObserver){
+        if (this.resizeObserver) {
             this.resizeObserver.unobserve(this._container);
             this.resizeObserver.disconnect();
         }
@@ -106,7 +106,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
         this.resize = this.onResize();
     }
 
-    basicCreation(){
+    basicCreation() {
         const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100 * 1000);
         camera.name = "Camera";
         camera.position.set(0, 5, 10);
@@ -140,22 +140,22 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
         css3DRenderer.domElement.style.top = '0px';
         css3DRenderer.domElement.style.pointerEvents = 'none';
 
-        return { camera,scene,renderer,css3DRenderer };
+        return { camera, scene, renderer, css3DRenderer };
     }
 
     /**
      * 初始化功能模块
      */
-    initModules():PreviewerModules {
-        const controls = new CameraControls(this.camera,this.renderer.domElement);
-        controls.addEventListener("update", () => {});
+    initModules(): PreviewerModules {
+        const controls = new CameraControls(this.camera, this.renderer.domElement);
+        controls.addEventListener("update", () => { });
 
         return {
             controls,
             // 粒子系统
             particleSystem: new ParticleSystem(this),
             // 3d tiles管理器
-            tilesManage: new TilesManage(this.scene,this.camera,this.renderer),
+            tilesManage: new TilesManage(this.scene, this.camera, this.renderer),
         }
     }
 
@@ -163,7 +163,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
      * 加载默认环境和背景
      */
     loadEnv(
-        options?:{
+        options?: {
             setBg?: boolean,
             extension?: string,
             onLoad?: (texture: THREE.Texture) => void,
@@ -175,7 +175,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
         const params = Object.assign({
             setBg: true,
             extension: this.options.hdr.split(".").pop()?.toLowerCase() || 'hdr'
-        },options)
+        }, options)
 
         Loader.loadUrlTexture(params.extension, this.options.hdr, (texture: THREE.Texture) => {
             texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -185,18 +185,18 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
             this.render();
 
             params.onLoad && params.onLoad(texture)
-        },(err) => params.onError && params.onError(err));
+        }, (err) => params.onError && params.onError(err));
     }
 
     /**
      * 加载预览项
      */
-    load(fileOrUrl:string | File,type:string = "Model") {
+    load(fileOrUrl: string | File, type: string = "Model") {
         return new Promise(async (resolve, reject) => {
             this.clear();
 
             let file = fileOrUrl;
-            if(!(fileOrUrl instanceof File) && !["Texture","Billboard","HDR","Tiles"].includes(type)) {
+            if (!(fileOrUrl instanceof File) && !["Texture", "Billboard", "HDR", "Tiles"].includes(type)) {
                 const response = await fetch(fileOrUrl);
                 if (!response.ok) {
                     reject('The network is responding abnormally');
@@ -206,14 +206,14 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
                 const filename = fileOrUrl.substring(fileOrUrl.lastIndexOf("/") + 1);
 
                 const blob = await response.blob();
-                file = new File([blob], filename,{ type: blob.type });
+                file = new File([blob], filename, { type: blob.type });
             }
 
             switch (type) {
                 case "Model":
-                    Loader.loadFile(file, new THREE.LoadingManager(),null,false).then((model) => {
+                    Loader.loadFile(file, new THREE.LoadingManager(), null, false).then((model) => {
                         this.scene.add(model);
-                        focusObject(model,this.modules.controls);
+                        focusObject(model, this.modules.controls);
 
                         resolve(model);
                     }).catch(error => {
@@ -227,7 +227,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
                             const mesh = new THREE.Mesh(geometry, material);
                             this.scene.add(mesh);
 
-                            focusObject(mesh,this.modules.controls);
+                            focusObject(mesh, this.modules.controls);
 
                             resolve(mesh);
                         })
@@ -237,17 +237,17 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
                     break;
                 case "Texture":
                     let mapPath = file;
-                    if(file instanceof File){
+                    if (file instanceof File) {
                         mapPath = URL.createObjectURL(file);
                     }
 
                     const geometry = new THREE.PlaneGeometry(1, 1);
                     const material = new THREE.MeshStandardMaterial({
                         side: THREE.DoubleSide,
-                        map: new THREE.TextureLoader().load(mapPath as string,(texture) => {
+                        map: new THREE.TextureLoader().load(mapPath as string, (texture) => {
                             texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
                             texture.repeat.set(1, 1);
-                            if(file instanceof File){
+                            if (file instanceof File) {
                                 URL.revokeObjectURL(mapPath as string)
                             }
 
@@ -257,7 +257,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
                             focusObject(panel, this.modules.controls);
 
                             resolve(panel);
-                        },undefined,(err) => reject(err))
+                        }, undefined, (err) => reject(err))
                     });
 
                     break;
@@ -265,7 +265,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
                     const _ops = getDefaultBillboardOptions();
                     _ops.image.visible = true;
                     _ops.image.position = POSITION.LEFT;
-                    if(file instanceof File){
+                    if (file instanceof File) {
                         _ops.name = file.name;
                         _ops.image.url = URL.createObjectURL(file);
                     } else {
@@ -276,7 +276,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
                     const billboard = new Billboard(_ops);
 
                     const handleBillboardImgLoaded = () => {
-                        if(file instanceof File){
+                        if (file instanceof File) {
                             URL.revokeObjectURL(_ops.image.url);
                         }
 
@@ -291,26 +291,26 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
                     break;
                 case "HDR":
                     let hdrPath = file, extension = "hdr";
-                    if(file instanceof File){
+                    if (file instanceof File) {
                         hdrPath = URL.createObjectURL(file);
                         extension = file.name.split(".").pop()?.toLowerCase() || "hdr"
-                    }else {
+                    } else {
                         extension = file.split(".").pop()?.toLowerCase() || "hdr";
                     }
 
                     this.options.hdr = hdrPath as string;
                     this.loadEnv({
-                        setBg:true,
-                        extension:extension,
-                        onLoad:(texture) => {
-                            if(file instanceof File){
+                        setBg: true,
+                        extension: extension,
+                        onLoad: (texture) => {
+                            if (file instanceof File) {
                                 URL.revokeObjectURL(hdrPath as string);
                             }
 
                             resolve(texture);
                         },
                         onError: (error) => {
-                            if(file instanceof File){
+                            if (file instanceof File) {
                                 URL.revokeObjectURL(hdrPath as string);
                             }
 
@@ -319,20 +319,20 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
                     })
                     break;
                 case "Tiles":
-                    if(fileOrUrl instanceof File){
+                    if (fileOrUrl instanceof File) {
                         reject();
                         return;
                     }
-                    if(!fileOrUrl.includes("tileset.json")) {
+                    if (!fileOrUrl.includes("tileset.json")) {
                         fileOrUrl = `${fileOrUrl}/tileset.json`;
                     }
                     const tiles = new Tiles({
                         url: fileOrUrl,
                         name: "AstralPreviewTiles",
-                        reset2origin:true,
+                        reset2origin: true,
                     })
                     this.addTiles(tiles).then(() => {
-                        this.modules.controls.fitToBox(tiles,true);
+                        this.modules.controls.fitToBox(tiles, true);
                     })
 
                     resolve(tiles);
@@ -349,7 +349,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
     /**
      * 监听视窗变化（节流）
      */
-    onResize(){
+    onResize() {
         const resize = () => {
             this.camera.aspect = this._container.offsetWidth / this._container.offsetHeight;
             this.camera.updateProjectionMatrix();
@@ -373,10 +373,10 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
     /**
      * 清空场景
      */
-    clear(){
-        for(let i = this.scene.children.length - 1; i >= 0; i--){
+    clear() {
+        for (let i = this.scene.children.length - 1; i >= 0; i--) {
             const child = this.scene.children[i];
-            if(!child.parent || child.ignore) continue;
+            if (!child.parent || child.ignore) continue;
 
             child.parent.remove(child);
         }
@@ -384,7 +384,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
         this.render();
     }
 
-    animate(){
+    animate() {
         this.timer.update();
 
         const delta = this.timer.getDelta();
@@ -407,8 +407,8 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
         this.render();
     }
 
-    render(){
-        this.dispatchEvent({type: 'beforeRender'});
+    render() {
+        this.dispatchEvent({ type: 'beforeRender' });
 
         this.renderer.autoClear = false;
 
@@ -418,7 +418,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
 
         this.renderer.autoClear = true;
 
-        this.dispatchEvent({type: 'afterRender'});
+        this.dispatchEvent({ type: 'afterRender' });
     }
 
     /**
@@ -448,7 +448,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
         this.renderer = null;
 
         // @ts-ignore 清空EventDispatcher监听
-        if(this._listeners){
+        if (this._listeners) {
             // @ts-ignore
             Object.keys(this._listeners).forEach(type => {
                 // @ts-ignore
@@ -483,7 +483,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
     /**
      * 添加瓦片
      */
-    addTiles(tiles:Tiles){
+    addTiles(tiles: Tiles) {
         return new Promise(resolve => {
             tiles.setCameraAndRenderer(this.camera, this.renderer);
 
@@ -498,7 +498,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
     /**
      * 移除瓦片
      */
-    removeTiles(tiles:Tiles){
+    removeTiles(tiles: Tiles) {
         this.scene.remove(tiles);
 
         this.modules.tilesManage.removeTiles(tiles);

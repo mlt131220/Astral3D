@@ -5,8 +5,8 @@
  * @description 流光墙着色器材质
  * @from http://t.csdnimg.cn/zSxq0
  */
-import {DoubleSide, ShaderMaterial,RepeatWrapping,TextureLoader} from "three";
-import {useDispatchSignal} from "@/hooks";
+import { DoubleSide, ShaderMaterial, RepeatWrapping, TextureLoader } from "three";
+import { useDispatchSignal } from "#/hooks";
 
 const vertex = `
      varying vec2 vUv;
@@ -32,7 +32,7 @@ const fragment = /*glsl*/`
     }
 `;
 
-export class StreamerWallShaderMaterial{
+export class StreamerWallShaderMaterial {
     static _ShaderMaterial: ShaderMaterial;
     static Name = "StreamerWallShaderMaterial";
 
@@ -51,7 +51,7 @@ export class StreamerWallShaderMaterial{
         return StreamerWallShaderMaterial.InstanceShaderMaterial();
     }
 
-    static InstanceShaderMaterial(){
+    static InstanceShaderMaterial() {
         const bgTexture = new TextureLoader().load("/static/images/resource/material/shader/texture2D/GradationBlue.png");
 
         const flowTexture = new TextureLoader().load("/static/images/resource/material/shader/texture2D/FlowTexture.png");
@@ -59,9 +59,9 @@ export class StreamerWallShaderMaterial{
 
         const material = new ShaderMaterial({
             uniforms: {
-                uTime: {value: 0.0},
-                uFlowTexture: {value: flowTexture},
-                uBgTexture: {value: bgTexture}
+                uTime: { value: 0.0 },
+                uFlowTexture: { value: flowTexture },
+                uBgTexture: { value: bgTexture }
             },
             vertexShader: vertex,
             fragmentShader: fragment,
@@ -77,13 +77,13 @@ export class StreamerWallShaderMaterial{
     static Init() {
         StreamerWallShaderMaterial._ShaderMaterial = StreamerWallShaderMaterial.InstanceShaderMaterial();
 
-        useDispatchSignal("instantiateShaderMaterial",StreamerWallShaderMaterial);
+        useDispatchSignal("instantiateShaderMaterial", StreamerWallShaderMaterial);
 
         return StreamerWallShaderMaterial._ShaderMaterial;
     }
 
     static Update() {
-        if(!StreamerWallShaderMaterial._ShaderMaterial) return;
+        if (!StreamerWallShaderMaterial._ShaderMaterial) return;
 
         StreamerWallShaderMaterial._ShaderMaterial.uniforms.uTime.value += .01
     }

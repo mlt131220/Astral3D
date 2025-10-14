@@ -7,13 +7,13 @@
 import * as THREE from 'three';
 // 原生three的扩展
 import '../expansion';
-import Logger from "@/utils/log/Logger";
-import {Config,Storage,Project,Selector,History as _History,Resource,CSM} from "./modules";
+import Logger from "#/utils/log/Logger";
+import { Config, Storage, Project, Selector, History as _History, Resource, CSM } from "./modules";
 import { AnimationManager } from "../animation/AnimationManager";
-import {useAddSignal, useDispatchSignal, useSetSignalActive} from '@/hooks';
-import Loader from "@/core/loader/Loader.ts";
-import {AddScriptCommand,RemoveScriptCommand} from "@/core/commands/Commands.ts";
-import Viewer from "@/core/viewer/Viewer.ts";
+import { useAddSignal, useDispatchSignal, useSetSignalActive } from '#/hooks';
+import Loader from "#/core/loader/Loader.ts";
+import { AddScriptCommand, RemoveScriptCommand } from "#/core/commands/Commands.ts";
+import Viewer from "#/core/viewer/Viewer.ts";
 
 const _DEFAULT_CAMERA = new THREE.PerspectiveCamera(45, 1, 0.01, 100 * 1000);
 _DEFAULT_CAMERA.name = "默认相机";
@@ -49,27 +49,27 @@ export class App {
     /**
      * 场景中的几何数据集合
      */
-    public geometries:{[uuid:string]:THREE.BufferGeometry}= {};
+    public geometries: { [uuid: string]: THREE.BufferGeometry } = {};
 
     /**
      * 场景中的材质集合
      */
-    public materials:{[uuid:string]:THREE.Material} = {};
+    public materials: { [uuid: string]: THREE.Material } = {};
 
     /**
      * 场景中的贴图集合
      */
-    public textures:{[uuid:string]:THREE.Texture} = {};
+    public textures: { [uuid: string]: THREE.Texture } = {};
 
     /**
      * 场景中的脚本集合
      */
-    public scripts:ISceneJson['scripts'] = {};
+    public scripts: ISceneJson['scripts'] = {};
 
     /**
      * 场景中的辅助集合
      */
-    public helpers:Record<number, THREE.Object3D> = {};
+    public helpers: Record<number, THREE.Object3D> = {};
 
     /**
      * 场景中的相机集合
@@ -89,12 +89,12 @@ export class App {
     /**
      * 场景选中的模型
      */
-    public selected:THREE.Object3D | null = null;
+    public selected: THREE.Object3D | null = null;
 
     /**
      * 场景锁定的模型
      */
-    public locked:THREE.Object3D | null = null;
+    public locked: THREE.Object3D | null = null;
 
     /**
      * 日志记录
@@ -144,14 +144,14 @@ export class App {
     /**
      * 间隔多长时间渲染渲染一次,用于固定fps上限（单位秒）
      */
-    public singleFrameTime:number = 1 / this.FPS;
+    public singleFrameTime: number = 1 / this.FPS;
 
     /**
      * 当前视口示例，实例化视口时赋值
      */
-    public viewer:Viewer | null = null;
+    public viewer: Viewer | null = null;
 
-    constructor(){
+    constructor() {
         this.scene.name = "默认场景";
 
         this.addCamera(this.camera);
@@ -162,7 +162,7 @@ export class App {
     /**
      * 获取渲染帧率上限
      */
-    get FPS():number{
+    get FPS(): number {
         return this.project.getKey("renderer.fps");
     }
 
@@ -170,8 +170,8 @@ export class App {
      * 设置渲染帧率上限
      * @param fps
      */
-    set FPS(fps:number){
-        this.project.setKey("renderer.fps",fps,false);
+    set FPS(fps: number) {
+        this.project.setKey("renderer.fps", fps, false);
 
         this.singleFrameTime = fps ? (1 / fps) : 0;
     }
@@ -179,7 +179,7 @@ export class App {
     /**
      * 设置初始配置
      */
-    setConfig(_config:Record<string, any>){
+    setConfig(_config: Record<string, any>) {
         this.config.setConfig(_config);
     }
 
@@ -187,8 +187,8 @@ export class App {
      * 生成场景
      * @param scene
      */
-    setScene(scene:THREE.Scene) {
-        this.scene.copy(scene,false)
+    setScene(scene: THREE.Scene) {
+        this.scene.copy(scene, false)
         // copy方法不会复制uuid，需要手动赋值
         this.scene.uuid = scene.uuid;
         if (this.scene.animations && this.scene.animations.length > 0) this.clipAction(this.scene);
@@ -210,24 +210,24 @@ export class App {
      * 剪辑动画
      * @param object
      */
-    clipAction(object:THREE.Object3D){
+    clipAction(object: THREE.Object3D) {
         if (!object.animations || !object.animations.length) return;
 
         // 每个包含动画的模型都会有自己的混合器，因为如果采用共用scene混合器方案会造成全场景动画播放进度统一的情况
         let mixer = this.animationManager.mixerMap.get(object.uuid);
-        if(!mixer){
+        if (!mixer) {
             mixer = new THREE.AnimationMixer(object);
             this.animationManager.mixerMap.set(object.uuid, mixer);
         }
 
-        object.animations.forEach((animation,index) => {
+        object.animations.forEach((animation, index) => {
             if ((animation instanceof THREE.AnimationAction) && animation.getClip()) {
                 this.animationManager.actionMap.set(animation.getClip().uuid, animation)
 
                 return;
             }
 
-            if(!(animation instanceof THREE.AnimationClip)) return;
+            if (!(animation instanceof THREE.AnimationClip)) return;
 
             const action = (<THREE.AnimationMixer>mixer).clipAction(animation, object);
             // @ts-ignore
@@ -243,7 +243,7 @@ export class App {
      * @param parent
      * @param index
      */
-    addObject(object:THREE.Object3D, parent?:THREE.Object3D, index?:number) {
+    addObject(object: THREE.Object3D, parent?: THREE.Object3D, index?: number) {
         object.traverseByCondition((child) => {
             if (child.animations && child.animations.length > 0) this.clipAction(child);
             if (child.geometry !== undefined) this.addGeometry(child.geometry);
@@ -275,7 +275,7 @@ export class App {
      * @param parent
      * @param before
      */
-    moveObject(object:THREE.Object3D, parent:THREE.Object3D, before:THREE.Object3D) {
+    moveObject(object: THREE.Object3D, parent: THREE.Object3D, before: THREE.Object3D) {
         if (parent === undefined) {
             parent = this.scene;
         }
@@ -297,7 +297,7 @@ export class App {
      * @param object
      * @param name
      */
-    nameObject(object:THREE.Object3D, name:string) {
+    nameObject(object: THREE.Object3D, name: string) {
         object.name = name;
         useDispatchSignal('sceneGraphChanged');
     }
@@ -306,16 +306,16 @@ export class App {
      * 移除模型
      * @param object
      */
-    removeObject(object:THREE.Object3D) {
+    removeObject(object: THREE.Object3D) {
         // 由于含有ignore属性的对象与业务关联，不受scene管控
         // object.parent === null避免删除相机或场景
         if (object.parent === null || object.ignore) return;
 
-        object.traverseByCondition((child:THREE.Object3D) => {
+        object.traverseByCondition((child: THREE.Object3D) => {
             this.removeCamera(child);
             this.removeHelper(child);
             if (child.material !== undefined) this.removeMaterial(child.material);
-        }, (child:THREE.Object3D) => !child.ignore);
+        }, (child: THREE.Object3D) => !child.ignore);
 
         object.parent.remove(object);
 
@@ -327,7 +327,7 @@ export class App {
      * 添加几何数据
      * @param geometry
      */
-    addGeometry(geometry:THREE.BufferGeometry) {
+    addGeometry(geometry: THREE.BufferGeometry) {
         this.geometries[geometry.uuid] = geometry;
     }
 
@@ -336,7 +336,7 @@ export class App {
      * @param geometry
      * @param name
      */
-    setGeometryName(geometry:THREE.BufferGeometry, name:string) {
+    setGeometryName(geometry: THREE.BufferGeometry, name: string) {
         geometry.name = name;
         useDispatchSignal('sceneGraphChanged');
     }
@@ -345,7 +345,7 @@ export class App {
      * 场景中新增材质
      * @param material
      */
-    addMaterial(material:THREE.Material | THREE.Material[]) {
+    addMaterial(material: THREE.Material | THREE.Material[]) {
         if (Array.isArray(material)) {
             for (let i = 0, l = material.length; i < l; i++) {
                 this.addMaterialToRefCounter(material[i]);
@@ -361,7 +361,7 @@ export class App {
      * 新增材质的使用计数
      * @param material
      */
-    addMaterialToRefCounter(material:THREE.Material) {
+    addMaterialToRefCounter(material: THREE.Material) {
         let materialsRefCounter = this.materialsRefCounter;
         let count = materialsRefCounter.get(material);
 
@@ -382,7 +382,7 @@ export class App {
      * 场景中移除材质
      * @param material
      */
-    removeMaterial(material:THREE.Material | THREE.Material[]) {
+    removeMaterial(material: THREE.Material | THREE.Material[]) {
         if (Array.isArray(material)) {
             for (let i = 0, l = material.length; i < l; i++) {
                 this.removeMaterialFromRefCounter(material[i]);
@@ -398,7 +398,7 @@ export class App {
      * 移除材质时减少对应材质使用计数
      * @param material
      */
-    removeMaterialFromRefCounter(material:THREE.Material) {
+    removeMaterialFromRefCounter(material: THREE.Material) {
         let materialsRefCounter = this.materialsRefCounter;
         let count = materialsRefCounter.get(material) as number;
         count--;
@@ -415,7 +415,7 @@ export class App {
      * 通过材质uuid获取材质
      * @param uuid
      */
-    getMaterialByUuid(uuid:string) {
+    getMaterialByUuid(uuid: string) {
         return this.materials[uuid];
     }
 
@@ -424,7 +424,7 @@ export class App {
      * @param material
      * @param name
      */
-    setMaterialName(material:THREE.Material, name:string) {
+    setMaterialName(material: THREE.Material, name: string) {
         material.name = name;
         useDispatchSignal('sceneGraphChanged');
     }
@@ -433,7 +433,7 @@ export class App {
      * 场景中新增贴图
      * @param texture
      */
-    addTexture(texture:THREE.Texture) {
+    addTexture(texture: THREE.Texture) {
         this.textures[texture.uuid] = texture;
     }
 
@@ -441,7 +441,7 @@ export class App {
      * 场景中新增相机
      * @param camera
      */
-    addCamera(camera:THREE.Camera) {
+    addCamera(camera: THREE.Camera) {
         if (camera.isCamera) {
             this.cameras[camera.uuid] = camera;
             useDispatchSignal('cameraAdded', camera);
@@ -452,7 +452,7 @@ export class App {
      * 场景中移除相机
      * @param camera
      */
-    removeCamera(camera:THREE.Camera | THREE.Object3D) {
+    removeCamera(camera: THREE.Camera | THREE.Object3D) {
         if (this.cameras[camera.uuid] !== undefined) {
             delete this.cameras[camera.uuid];
             useDispatchSignal('cameraRemoved', camera);
@@ -464,7 +464,7 @@ export class App {
      * @param object
      * @param helper
      */
-    addHelper(object:any, helper?:THREE.Object3D) {
+    addHelper(object: any, helper?: THREE.Object3D) {
         if (helper === undefined) {
             if (object.isCamera) {
                 helper = new THREE.CameraHelper(object);
@@ -486,7 +486,7 @@ export class App {
             }
 
             let geometry = new THREE.SphereGeometry(2, 4, 2);
-            let material = new THREE.MeshBasicMaterial({color: 0xff0000, visible: false});
+            let material = new THREE.MeshBasicMaterial({ color: 0xff0000, visible: false });
             const picker = new THREE.Mesh(geometry, material);
             picker.name = 'picker';
             picker.proxy = object;
@@ -501,7 +501,7 @@ export class App {
      * 移除某个模型上的三维辅助工具
      * @param object
      */
-    removeHelper(object:THREE.Object3D) {
+    removeHelper(object: THREE.Object3D) {
         if (this.helpers[object.id] !== undefined) {
             const helper = this.helpers[object.id];
             helper.parent?.remove(helper);
@@ -514,8 +514,8 @@ export class App {
      * @param object
      * @param script
      */
-    addScript(object:THREE.Object3D, script:ISceneScript) {
-        this.execute(new AddScriptCommand(object,script));
+    addScript(object: THREE.Object3D, script: ISceneScript) {
+        this.execute(new AddScriptCommand(object, script));
     }
 
     /**
@@ -523,8 +523,8 @@ export class App {
      * @param object
      * @param script
      */
-    removeScript(object:THREE.Object3D, script:ISceneScript) {
-        this.execute(new RemoveScriptCommand(object,script));
+    removeScript(object: THREE.Object3D, script: ISceneScript) {
+        this.execute(new RemoveScriptCommand(object, script));
     }
 
     /**
@@ -532,7 +532,7 @@ export class App {
      * @param object
      * @param slot
      */
-    getObjectMaterial(object:THREE.Object3D, slot:number) {
+    getObjectMaterial(object: THREE.Object3D, slot: number) {
         let material = object.material;
 
         if (Array.isArray(material) && slot !== undefined) {
@@ -547,7 +547,7 @@ export class App {
      * @param slot
      * @param newMaterial
      */
-    setObjectMaterial(object:THREE.Object3D, slot:number | undefined, newMaterial:THREE.Material) {
+    setObjectMaterial(object: THREE.Object3D, slot: number | undefined, newMaterial: THREE.Material) {
         if (Array.isArray(object.material) && slot !== undefined) {
             object.material[slot] = newMaterial;
         } else {
@@ -577,7 +577,7 @@ export class App {
      * 选中模型
      * @param object
      */
-    select(object:THREE.Object3D) {
+    select(object: THREE.Object3D) {
         this.selector.select(object);
     }
 
@@ -585,7 +585,7 @@ export class App {
      * 通过模型id选中模型
      * @param id
      */
-    selectById(id:number) {
+    selectById(id: number) {
         if (id === this.camera.id) {
             this.select(this.camera);
             return;
@@ -600,9 +600,9 @@ export class App {
      * 通过模型uuid选中模型
      * @param uuid
      */
-    selectByUuid(uuid:string) {
+    selectByUuid(uuid: string) {
         const scope = this;
-        this.scene.traverse(function (child:THREE.Object3D) {
+        this.scene.traverse(function (child: THREE.Object3D) {
             if (child.uuid === uuid) {
                 scope.select(child);
             }
@@ -620,8 +620,8 @@ export class App {
      * 锁定模型
      * @param object
      */
-    lock(object?:THREE.Object3D | null){
-        if(!object){
+    lock(object?: THREE.Object3D | null) {
+        if (!object) {
             object = this.selected;
         }
 
@@ -634,7 +634,7 @@ export class App {
     /**
      * 取消模型锁定状态
      */
-    unlock(){
+    unlock() {
         this.locked = null;
         useDispatchSignal('objectUnlocked');
     }
@@ -643,7 +643,7 @@ export class App {
      * 相机聚焦模型
      * @param object
      */
-    focus(object:THREE.Object3D) {
+    focus(object: THREE.Object3D) {
         if (object !== undefined) {
             useDispatchSignal('objectFocused', object);
         }
@@ -653,7 +653,7 @@ export class App {
      * 通过id聚焦模型
      * @param id
      */
-    focusById(id:number) {
+    focusById(id: number) {
         const obj = this.scene.getObjectById(id);
 
         obj && this.focus(obj);
@@ -663,7 +663,7 @@ export class App {
      * 通过uuid聚焦模型
      * @param uuid
      */
-    focusByUuid(uuid:string) {
+    focusByUuid(uuid: string) {
         if (uuid === undefined) {
             this.deselect();
             return;
@@ -677,7 +677,7 @@ export class App {
      * 通过uuid获取模型
      * @param uuid
      */
-    getObjectByUuid(uuid:string) {
+    getObjectByUuid(uuid: string) {
         return this.scene.getObjectByProperty('uuid', uuid);
     }
 
@@ -685,7 +685,7 @@ export class App {
      * 遍历平铺所有子级mesh
      * @param object
      */
-    traverseMeshToArr(object:THREE.Object3D) {
+    traverseMeshToArr(object: THREE.Object3D) {
         if (object.isMesh) return [object];
 
         const arr: THREE.Mesh[] = [];
@@ -720,7 +720,7 @@ export class App {
      * @param textures
      * @param properties
      */
-    createPBRMaterial(textures: { [type: string]:string | THREE.Texture } = {},properties:any = {}):Promise<THREE.MeshStandardMaterial> {
+    createPBRMaterial(textures: { [type: string]: string | THREE.Texture } = {}, properties: any = {}): Promise<THREE.MeshStandardMaterial> {
         return new Promise((resolve, reject) => {
             const material = new THREE.MeshStandardMaterial({
                 // 位移贴图对网格的影响程度默认设置为0
@@ -731,10 +731,10 @@ export class App {
                 material[key] = properties[key];
             });
 
-            const num = new Proxy({value: 10},{
+            const num = new Proxy({ value: 10 }, {
                 set(target: { value: number }, p: string | symbol, newValue: any): boolean {
                     target[p] = newValue;
-                    if(p === 'value' && newValue === 0){
+                    if (p === 'value' && newValue === 0) {
                         resolve(material);
                     }
 
@@ -743,141 +743,141 @@ export class App {
             })
 
             // 基础颜色贴图(高光反射/光泽度工作流:diffuse, 金属/粗糙度工作流:baseColor)
-            if(textures.baseColor){
-                this.resource.loadURLTexture(textures.baseColor,(texture => {
+            if (textures.baseColor) {
+                this.resource.loadURLTexture(textures.baseColor, (texture => {
                     material.map = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 法线贴图
-            if(textures.normal){
-                this.resource.loadURLTexture(textures.normal,(texture => {
+            if (textures.normal) {
+                this.resource.loadURLTexture(textures.normal, (texture => {
                     material.normalMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else if(textures.bump){
+            } else if (textures.bump) {
                 // 凹凸贴图(如果定义了法线贴图，则将忽略该贴图)
-                this.resource.loadURLTexture(textures.bump,(texture => {
+                this.resource.loadURLTexture(textures.bump, (texture => {
                     material.bumpMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 置换贴图(位移贴图)
-            if(textures.displacement){
-                this.resource.loadURLTexture(textures.displacement,(texture => {
+            if (textures.displacement) {
+                this.resource.loadURLTexture(textures.displacement, (texture => {
                     material.displacementMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 粗糙度贴图
-            if(textures.roughness){
-                this.resource.loadURLTexture(textures.roughness,(texture => {
+            if (textures.roughness) {
+                this.resource.loadURLTexture(textures.roughness, (texture => {
                     material.roughnessMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 金属度贴图
-            if(textures.metalness){
-                this.resource.loadURLTexture(textures.metalness,(texture => {
+            if (textures.metalness) {
+                this.resource.loadURLTexture(textures.metalness, (texture => {
                     material.metalnessMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 环境遮挡贴图
-            if(textures.ao){
-                this.resource.loadURLTexture(textures.ao,(texture => {
+            if (textures.ao) {
+                this.resource.loadURLTexture(textures.ao, (texture => {
                     material.aoMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 自发光贴图
-            if(textures.emissive){
-                this.resource.loadURLTexture(textures.emissive,(texture => {
+            if (textures.emissive) {
+                this.resource.loadURLTexture(textures.emissive, (texture => {
                     material.emissiveMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 透明贴图
-            if(textures.alpha){
-                this.resource.loadURLTexture(textures.alpha,(texture => {
+            if (textures.alpha) {
+                this.resource.loadURLTexture(textures.alpha, (texture => {
                     material.alphaMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 环境贴图（一般不会设置，因为会使用scene.environment）
-            if(textures.env){
-                this.resource.loadURLTexture(textures.env,(texture => {
+            if (textures.env) {
+                this.resource.loadURLTexture(textures.env, (texture => {
                     material.envMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
 
             // 光照贴图
-            if(textures.light){
-                this.resource.loadURLTexture(textures.light,(texture => {
+            if (textures.light) {
+                this.resource.loadURLTexture(textures.light, (texture => {
                     material.lightMap = texture;
 
                     num.value--;
-                }),err => {
+                }), err => {
                     reject(err);
                 });
-            }else{
+            } else {
                 num.value--;
             }
         })
@@ -898,7 +898,7 @@ export class App {
         this.scene.environment = null;
         this.scene.fog = null;
 
-        for(let i = this.scene.children.length - 1; i >= 0; i--){
+        for (let i = this.scene.children.length - 1; i >= 0; i--) {
             this.removeObject(this.scene.children[i]);
         }
 
@@ -942,9 +942,9 @@ export class App {
         const scene = this.setScene(await loader.parseAsync(sceneJson.scene) as THREE.Scene);
 
         // 20250718: 环境类型是ModelViewer时需要手动设置，因为scene.toJSON()不会处理renderTargetTexture
-        switch(sceneJson.scene.object.environmentType){
+        switch (sceneJson.scene.object.environmentType) {
             case "ModelViewer":
-                useDispatchSignal("sceneEnvironmentChanged",'ModelViewer');
+                useDispatchSignal("sceneEnvironmentChanged", 'ModelViewer');
                 useDispatchSignal("sceneGraphChanged");
                 break
         }
@@ -990,7 +990,7 @@ export class App {
      * @param cmd
      * @param optionalName
      */
-    execute(cmd, optionalName?:string) {
+    execute(cmd, optionalName?: string) {
         this.history.execute(cmd, optionalName);
     }
 

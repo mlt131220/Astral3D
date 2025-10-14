@@ -1,5 +1,5 @@
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -12,7 +12,7 @@ class SetUuidCommand extends Command {
 	public oldValue;
 	public newValue;
 
-	constructor(object, newValue ) {
+	constructor(object, newValue) {
 		super();
 
 		this.type = 'SetUuidCommand';
@@ -20,20 +20,20 @@ class SetUuidCommand extends Command {
 
 		this.object = object;
 
-		this.oldValue = ( object !== undefined ) ? object.uuid : undefined;
+		this.oldValue = (object !== undefined) ? object.uuid : undefined;
 		this.newValue = newValue;
 
 	}
 
 	execute() {
 		this.object.uuid = this.newValue;
-		useDispatchSignal("objectChanged",this.object);
+		useDispatchSignal("objectChanged", this.object);
 		useDispatchSignal("sceneGraphChanged");
 	}
 
 	undo() {
 		this.object.uuid = this.oldValue;
-		useDispatchSignal("objectChanged",this.object);
+		useDispatchSignal("objectChanged", this.object);
 		useDispatchSignal("sceneGraphChanged");
 	}
 
@@ -45,15 +45,15 @@ class SetUuidCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;
-		this.object = App.getObjectByUuid( json.oldValue );
+		this.object = App.getObjectByUuid(json.oldValue);
 
-		if ( this.object === undefined ) {
-			this.object = App.getObjectByUuid( json.newValue );
+		if (this.object === undefined) {
+			this.object = App.getObjectByUuid(json.newValue);
 		}
 	}
 }

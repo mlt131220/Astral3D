@@ -5,10 +5,10 @@
  * @date   2025-02-14 16:00:00
  */
 import * as THREE from 'three';
-import * as Particle from '@/core/libs/three-nebula';
-import {ParticleSystem} from '@/core/viewer/modules/ParticleSystem';
-import {ObjectLoader} from '@/core/loader/ObjectLoader';
-import {useAddSignal, useDispatchSignal, useRemoveSignal} from '@/hooks';
+import * as Particle from '#/core/libs/three-nebula';
+import { ParticleSystem } from '#/core/viewer/modules/ParticleSystem';
+import { ObjectLoader } from '#/core/loader/ObjectLoader';
+import { useAddSignal, useDispatchSignal, useRemoveSignal } from '#/hooks';
 
 /**
  * 获取默认粒子配置
@@ -152,7 +152,7 @@ export const getDefaultParticleConfig = (): IParticle.Config => ({
 let _handleAddToParticleSystemFn, _handleParticleCreatedFn;
 class ParticleEmitter extends THREE.Object3D {
   emitter: Particle.Emitter;
-  
+
   isEmitterProxy = true;
 
   constructor(emitter: Particle.Emitter) {
@@ -170,7 +170,7 @@ class ParticleEmitter extends THREE.Object3D {
     this.initEvent();
   }
 
-  initEvent(){
+  initEvent() {
     /**
       * 需要做粒子的选中，选中时定位到这个粒子发射器的代理对象上
       * 如果后续不需要做粒子选中了，就把下方代码删除
@@ -191,7 +191,7 @@ class ParticleEmitter extends THREE.Object3D {
    * 监听粒子创建
    * @param particle 
    */
-  handleParticleCreated(particle){
+  handleParticleCreated(particle) {
     if (!this.emitter?.particles) return;
 
     if (!this.emitter.particles.includes(particle)) return;
@@ -205,9 +205,9 @@ class ParticleEmitter extends THREE.Object3D {
    * 添加到粒子系统时
    * @param _emitter 
    */
-  handleAddToParticleSystem(_emitter: Particle.Emitter){
+  handleAddToParticleSystem(_emitter: Particle.Emitter) {
     if (_emitter === this.emitter) {
-      this.emitter.parent?.eventDispatcher.addEventListener('PARTICLE_CREATED', _handleParticleCreatedFn,true)
+      this.emitter.parent?.eventDispatcher.addEventListener('PARTICLE_CREATED', _handleParticleCreatedFn, true)
     }
   }
 
@@ -858,7 +858,7 @@ class ParticleEmitter extends THREE.Object3D {
       }
     })
 
-    useDispatchSignal("emitterAdd2ParticleSystem",emitter,json.emitter.system)
+    useDispatchSignal("emitterAdd2ParticleSystem", emitter, json.emitter.system)
 
     const particleEmitter = new ParticleEmitter(emitter);
     particleEmitter.name = json.name;
@@ -883,7 +883,7 @@ class ParticleEmitter extends THREE.Object3D {
       type: this.type,
       name: this.name,
       emitter: {
-        config:this.getEmitterJSON(),
+        config: this.getEmitterJSON(),
         system: this.emitter.parent.name,
         useInitializers: this.emitter.initializers.map(initializer => initializer.type),
         bodyObjectJSON: ParticleSystem.Body3DMap.get(this.uuid)?.toJSON() || null,
@@ -913,7 +913,7 @@ class ParticleEmitter extends THREE.Object3D {
   /**
    * 销毁
    */
-  dispose(){
+  dispose() {
     // 手动销毁所有粒子模型对象，发射器的destroy方法不会进行销毁
     this.emitter.particles && this.emitter.particles.forEach(p => {
       if (!p.target) return;
@@ -927,7 +927,7 @@ class ParticleEmitter extends THREE.Object3D {
     this.emitter.parent?.eventDispatcher.removeEventListener('PARTICLE_CREATED', _handleParticleCreatedFn);
     _handleParticleCreatedFn = null;
 
-    this.emitter.destroy();  
+    this.emitter.destroy();
   }
 }
 

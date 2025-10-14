@@ -1,5 +1,5 @@
-import {Readable} from 'stream';
-import DxfArrayScanner, {IGroup} from './DxfArrayScanner';
+import { Readable } from 'stream';
+import DxfArrayScanner, { IGroup } from './DxfArrayScanner';
 import AUTO_CAD_COLOR_INDEX from './AutoCadColorIndex';
 import dimStyleCodes from './DimStyleCodes';
 
@@ -22,8 +22,8 @@ import Spline from './entities/spline';
 import Text from './entities/text';
 import Vertex from './entities/vertex';
 
-import log from '@/utils/log/Logger';
-import IGeometry, {EntityName, IEntity, IPoint} from './entities/geomtry';
+import log from '#/utils/log/Logger';
+import IGeometry, { EntityName, IEntity, IPoint } from './entities/geomtry';
 
 export interface IBlock {
     entities: IEntity[];
@@ -236,7 +236,7 @@ export default class DxfParser {
 
                     // 确保我们读的是段代码
                     if (curr.code !== 2) {
-                        log.error(`Unexpected code ${debugCode(curr) } after 0:SECTION`);
+                        log.error(`Unexpected code ${debugCode(curr)} after 0:SECTION`);
                         curr = scanner.next();
                         continue;
                     }
@@ -286,7 +286,7 @@ export default class DxfParser {
                     // Filter here for particular variables we are interested in
                 } else {
                     if (curr.code === 10) {
-                        currVarValue = {x: curr.value as number} as IPoint;
+                        currVarValue = { x: curr.value as number } as IPoint;
                     } else if (curr.code === 20) {
                         (currVarValue as IPoint).y = curr.value as number;
                     } else if (curr.code === 30) {
@@ -318,7 +318,7 @@ export default class DxfParser {
                     if (!block.name) {
                         // log.error('block with handle "' + block.handle + '" is missing a name.');
                         // block.name = 'InvalidBlockName-' + block.ownerHandle;
-                    }else{
+                    } else {
                         blocks[block.name] = block;
                     }
                 } else {

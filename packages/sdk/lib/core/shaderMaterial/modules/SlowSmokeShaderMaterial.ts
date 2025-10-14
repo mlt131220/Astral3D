@@ -5,8 +5,8 @@
  * @description 动态烟着色器材质
  * @from https://glslsandbox.com/e#109550.0
  */
-import {DoubleSide, ShaderMaterial, Vector2} from "three";
-import {useDispatchSignal} from "@/hooks";
+import { DoubleSide, ShaderMaterial, Vector2 } from "three";
+import { useDispatchSignal } from "#/hooks";
 
 const vertex = `
 varying vec2 vUv;
@@ -159,8 +159,8 @@ export class SlowSmokeShaderMaterial {
     static InstanceShaderMaterial() {
         const material = new ShaderMaterial({
             uniforms: {
-                uTime: {value: 1.0},
-                uResolution: {value: SlowSmokeShaderMaterial.Resolution},
+                uTime: { value: 1.0 },
+                uResolution: { value: SlowSmokeShaderMaterial.Resolution },
             },
             vertexShader: vertex,
             fragmentShader: fragment,
@@ -180,7 +180,7 @@ export class SlowSmokeShaderMaterial {
     }
 
     static Update() {
-        if(!SlowSmokeShaderMaterial._ShaderMaterial) return;
+        if (!SlowSmokeShaderMaterial._ShaderMaterial) return;
 
         SlowSmokeShaderMaterial._ShaderMaterial.uniforms.uTime.value += .01
     }

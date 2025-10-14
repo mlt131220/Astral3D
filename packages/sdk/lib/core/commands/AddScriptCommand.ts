@@ -1,6 +1,6 @@
-import {Object3D} from "three";
+import { Object3D } from "three";
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -12,7 +12,7 @@ class AddScriptCommand extends Command {
 	private object: Object3D;
 	private script: any;
 
-	constructor(object:Object3D, script) {
+	constructor(object: Object3D, script) {
 		super();
 
 		this.type = 'AddScriptCommand';
@@ -29,19 +29,19 @@ class AddScriptCommand extends Command {
 
 		App.scripts[this.object.uuid].push(this.script);
 
-		useDispatchSignal("scriptAdded", this.object,this.script);
+		useDispatchSignal("scriptAdded", this.object, this.script);
 	}
 
 	undo() {
-		if (App.scripts[ this.object.uuid ] === undefined ) return;
+		if (App.scripts[this.object.uuid] === undefined) return;
 
-		const index = App.scripts[ this.object.uuid ].indexOf( this.script );
+		const index = App.scripts[this.object.uuid].indexOf(this.script);
 
 		if (index !== -1) {
-			App.scripts[ this.object.uuid ].splice( index, 1 );
+			App.scripts[this.object.uuid].splice(index, 1);
 		}
 
-		useDispatchSignal("scriptRemoved", this.object,this.script);
+		useDispatchSignal("scriptRemoved", this.object, this.script);
 	}
 
 	toJSON() {
@@ -54,7 +54,7 @@ class AddScriptCommand extends Command {
 	}
 
 	fromJSON(json) {
-		super.fromJSON( json );
+		super.fromJSON(json);
 
 		this.script = json.script;
 		this.object = App.getObjectByUuid(json.objectUuid) as Object3D;

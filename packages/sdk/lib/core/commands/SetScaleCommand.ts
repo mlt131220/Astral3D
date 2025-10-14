@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks/useSignal";
+import { useDispatchSignal } from "#/hooks/useSignal";
 import App from "../app/App";
 
 /**
@@ -14,7 +14,7 @@ class SetScaleCommand extends Command {
 	public oldValue;
 	public newValue;
 
-	constructor(object, newValue, optionaloldValue ) {
+	constructor(object, newValue, optionaloldValue) {
 		super();
 
 		this.type = 'SetScaleCommand';
@@ -23,30 +23,30 @@ class SetScaleCommand extends Command {
 
 		this.object = object;
 
-		if ( object !== undefined && newValue !== undefined ) {
+		if (object !== undefined && newValue !== undefined) {
 			this.oldValue = object.scale.clone();
 			this.newValue = newValue.clone();
 		}
 
-		if ( optionaloldValue !== undefined ) {
+		if (optionaloldValue !== undefined) {
 			this.oldValue = optionaloldValue.clone();
 		}
 	}
 
 	execute() {
-		this.object.scale.copy( this.newValue );
-		this.object.updateMatrixWorld( true );
-		useDispatchSignal("objectChanged",this.object);
+		this.object.scale.copy(this.newValue);
+		this.object.updateMatrixWorld(true);
+		useDispatchSignal("objectChanged", this.object);
 	}
 
 	undo() {
-		this.object.scale.copy( this.oldValue );
-		this.object.updateMatrixWorld( true );
-		useDispatchSignal("objectChanged",this.object);
+		this.object.scale.copy(this.oldValue);
+		this.object.updateMatrixWorld(true);
+		useDispatchSignal("objectChanged", this.object);
 	}
 
-	update( command ) {
-		this.newValue.copy( command.newValue );
+	update(command) {
+		this.newValue.copy(command.newValue);
 	}
 
 	toJSON() {
@@ -59,12 +59,12 @@ class SetScaleCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
-		this.object = App.getObjectByUuid( json.objectUuid );
-		this.oldValue = new Vector3().fromArray( json.oldValue );
-		this.newValue = new Vector3().fromArray( json.newValue );
+		this.object = App.getObjectByUuid(json.objectUuid);
+		this.oldValue = new Vector3().fromArray(json.oldValue);
+		this.newValue = new Vector3().fromArray(json.newValue);
 	}
 }
 

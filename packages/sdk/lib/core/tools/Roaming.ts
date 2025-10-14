@@ -7,15 +7,15 @@
 import * as THREE from 'three';
 import CameraControls from 'camera-controls';
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import {RoundedBoxGeometry} from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
-import {GenerateMeshBVHWorker} from '@/workers/bvh/GenerateMeshBVHWorker.js';
-import {useDispatchSignal} from "@/hooks";
-import {getMeshByInstancedMesh} from "@/utils";
-import {RoamingStatus} from "./RoamingStatus";
-import Loader from "@/core/loader/Loader";
-import App from "@/core/app/App";
-import Viewer from "@/core/viewer/Viewer";
-import MergeGeometriesWorker from "@/workers/mergeGeometries.worker.ts?worker&url";
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { GenerateMeshBVHWorker } from '#/workers/bvh/GenerateMeshBVHWorker.js';
+import { useDispatchSignal } from "#/hooks";
+import { getMeshByInstancedMesh } from "#/utils";
+import { RoamingStatus } from "./RoamingStatus";
+import Loader from "#/core/loader/Loader";
+import App from "#/core/app/App";
+import Viewer from "#/core/viewer/Viewer";
+import MergeGeometriesWorker from "#/workers/mergeGeometries.worker.ts?worker&url";
 
 let keyDownFn, keyUpFn;
 
@@ -68,7 +68,7 @@ class Roaming {
         this.group.visible = false;
         this.group.ignore = true;
 
-        this.mergeWorker = new Worker(MergeGeometriesWorker, {type: 'module'});
+        this.mergeWorker = new Worker(MergeGeometriesWorker, { type: 'module' });
         this.generateMeshBVHWorker = new GenerateMeshBVHWorker();
 
         this.addPlayer();
@@ -161,7 +161,7 @@ class Roaming {
     }
 
     // 添加漫游所需人物模型
-    addPlayer(){
+    addPlayer() {
         // 几何圆柱体 用于碰撞检测
         const cylinder = new THREE.Mesh(
             new RoundedBoxGeometry(0.5, 1.7, 0.5, 10, 0.5),
@@ -195,7 +195,7 @@ class Roaming {
                 const person = result.scene as THREE.Group;
                 person.name = "es-3d-roaming-player";
 
-                if(this.person){
+                if (this.person) {
                     person.matrix.copy(this.person.matrix);
                     person.matrixWorld.copy(this.person.matrixWorld);
 
@@ -206,7 +206,7 @@ class Roaming {
                 this.group.add(person);
 
                 // 漫游人物动画状态机
-                if(this.personStatus){
+                if (this.personStatus) {
                     this.personStatus.dispose();
                 }
                 this.personStatus = new RoamingStatus(person, result.animations);
@@ -214,7 +214,7 @@ class Roaming {
         }
 
         // 从本地DB读取人物模型
-        const playerConfig= App.config.getKey("roamingCharacter")
+        const playerConfig = App.config.getKey("roamingCharacter")
         App.storage.getModel(`player-${playerConfig}`).then((file: Blob | unknown) => {
             if (!file) {
                 const playerGlbUrl = new URL(`${import.meta.env.BASE_URL}resource/model/${playerConfig}.glb`, import.meta.url).href;
@@ -231,7 +231,7 @@ class Roaming {
 
     // 生成碰撞器环境
     generateColliderEnvironment() {
-        let mergedGeometry:any;
+        let mergedGeometry: any;
 
         // TODO：20251003 - environment组好像没有存在的意义？运行两个月无误后删除
         //const environment = new THREE.Group();
@@ -264,7 +264,7 @@ class Roaming {
         }
 
         const generateMergedGeometry = () => {
-            return new Promise((resolve,reject) => {
+            return new Promise((resolve, reject) => {
                 const cloneGeom = (me) => {
                     // 检查对应属性是否存在
                     if (!me.geometry.attributes || !me.geometry.attributes.position || me.geometry.attributes.position.isInterleavedBufferAttribute) return;
@@ -312,11 +312,11 @@ class Roaming {
                 // })
 
                 this.mergeWorker.onmessage = (event) => {
-                    if(event.data.type === "error") {
+                    if (event.data.type === "error") {
                         // 有可能是纯3DTiles场景
-                        if(this.viewer.modules.tilesManage.tilesMap.size === 0){
+                        if (this.viewer.modules.tilesManage.tilesMap.size === 0) {
                             reject(event.data.message);
-                        }else{
+                        } else {
                             resolve("");
                         }
 
@@ -706,4 +706,4 @@ class Roaming {
     }
 }
 
-export {Roaming}
+export { Roaming }

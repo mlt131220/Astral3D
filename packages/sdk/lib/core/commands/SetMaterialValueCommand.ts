@@ -1,5 +1,5 @@
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -15,7 +15,7 @@ class SetMaterialValueCommand extends Command {
 	public newValue;
 	public attributeName;
 
-	constructor(object, attributeName, newValue, materialSlot = 0 ) {
+	constructor(object, attributeName, newValue, materialSlot = 0) {
 		super();
 
 		this.type = 'SetMaterialValueCommand';
@@ -23,30 +23,30 @@ class SetMaterialValueCommand extends Command {
 		this.updatable = true;
 
 		this.object = object;
-		this.material = App.getObjectMaterial( object, materialSlot );
+		this.material = App.getObjectMaterial(object, materialSlot);
 
-		this.oldValue = ( this.material !== undefined ) ? this.material[ attributeName ] : undefined;
+		this.oldValue = (this.material !== undefined) ? this.material[attributeName] : undefined;
 		this.newValue = newValue;
 
 		this.attributeName = attributeName;
 	}
 
 	execute() {
-		this.material[ this.attributeName ] = this.newValue;
+		this.material[this.attributeName] = this.newValue;
 		this.material.needsUpdate = true;
-		useDispatchSignal("objectChanged",this.object);
-		useDispatchSignal("materialChanged",this.material);
+		useDispatchSignal("objectChanged", this.object);
+		useDispatchSignal("materialChanged", this.material);
 	}
 
 	undo() {
-		this.material[ this.attributeName ] = this.oldValue;
+		this.material[this.attributeName] = this.oldValue;
 		this.material.needsUpdate = true;
 
-		useDispatchSignal("objectChanged",this.object);
-		useDispatchSignal("materialChanged",this.material);
+		useDispatchSignal("objectChanged", this.object);
+		useDispatchSignal("materialChanged", this.material);
 	}
 
-	update( cmd ) {
+	update(cmd) {
 		this.newValue = cmd.newValue;
 	}
 
@@ -61,13 +61,13 @@ class SetMaterialValueCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
 		this.attributeName = json.attributeName;
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;
-		this.object = App.getObjectByUuid( json.objectUuid );
+		this.object = App.getObjectByUuid(json.objectUuid);
 	}
 
 }

@@ -1,12 +1,12 @@
-import {loadPluginAsync} from "./pluginLoader";
+import { loadPluginAsync } from "./pluginLoader";
 import Builtin from "./builtin/builtin";
-import {useDispatchSignal} from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 
 // 所有插件都必须实现此接口
 export interface Plugin {
     name: string; // 插件名称，插件的唯一标识
-    version:number; // 插件版本号
-    icon:string; // 插件图标
+    version: number; // 插件版本号
+    icon: string; // 插件图标
     install(config?: any): void; // 插件安装
     uninstall(): void; // 卸载插件
     run(): void; // 从插件盒子面板点击插件时的运行方法
@@ -20,12 +20,12 @@ export class PluginManager {
         new Builtin(this);
     }
 
-    get list(){
-        const list:IPlugin.Item[] = [];
+    get list() {
+        const list: IPlugin.Item[] = [];
         for (const plugin of this.plugins.values()) {
             list.push({
-                name:plugin.name,
-                icon:plugin.icon
+                name: plugin.name,
+                icon: plugin.icon
             })
         }
         return list;
@@ -36,18 +36,18 @@ export class PluginManager {
      * @param pluginPaths 插件地址
      * @param autoUse 插件是否自动注册
      */
-    async loadAsync(pluginPaths: string | string[],autoUse = false){
-        let plugins:Plugin[] = [];
+    async loadAsync(pluginPaths: string | string[], autoUse = false) {
+        let plugins: Plugin[] = [];
 
         for (const src of pluginPaths) {
             const plugin = await loadPluginAsync(src);
 
-            if(!plugin) {
+            if (!plugin) {
                 console.error(`插件加载失败: ${src},该插件不存在！`);
                 return;
             }
 
-            if(autoUse){
+            if (autoUse) {
                 this.use(plugin);
             }
 
@@ -70,7 +70,7 @@ export class PluginManager {
         // 注册插件
         plugin.install(config);
         this.plugins.set(plugin.name, plugin);
-        useDispatchSignal("pluginInstall",plugin);
+        useDispatchSignal("pluginInstall", plugin);
 
         return this;
     }
@@ -124,7 +124,7 @@ export class PluginManager {
      * @param pluginNames 插件名称/插件名称数组
      */
     run(pluginNames: string | string[]) {
-        this.traverse(pluginNames, ({plugin}) => {
+        this.traverse(pluginNames, ({ plugin }) => {
             if (typeof plugin.run === 'function') {
                 plugin.run();
             }
@@ -138,14 +138,14 @@ export class PluginManager {
      * @param pluginNames 插件名称/插件名称数组
      */
     uninstall(pluginNames: string | string[]): this {
-        this.traverse(pluginNames, ({name, plugin}) => {
+        this.traverse(pluginNames, ({ name, plugin }) => {
             // 获取插件的卸载函数并执行
             if (typeof plugin.uninstall === 'function') {
                 plugin.uninstall();
             }
 
             this.plugins.delete(name);
-            useDispatchSignal("pluginUninstall",name);
+            useDispatchSignal("pluginUninstall", name);
 
         })
 

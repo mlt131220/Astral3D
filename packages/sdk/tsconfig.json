@@ -3,36 +3,46 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "esnext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
     "noImplicitAny": false,
-
     /* Bundler mode */
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
     "baseUrl": ".",
     "types": [],
-    "typeRoots": ["./node_modules/@types/", "./types/"],
+    "typeRoots": [
+      "./node_modules/@types/",
+      "./types/"
+    ],
     "paths": {
-        "@/*": [
-            "./lib/*"
-        ]
+      "#/*": [
+        "./lib/*"
+      ]
     },
     "emitDeclarationOnly": true, // 只输出声明文件(ts 产物)
     "declaration": true, // 自动生成声明文件
     "declarationDir": "types", // 声明文件生成的目录
-    "allowUmdGlobalAccess":true
+    "allowUmdGlobalAccess": true
   },
-  "include": ["lib","types"],
-  "exclude": ["node_modules",  "dist"]
+  "include": [
+    "lib",
+    "types"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

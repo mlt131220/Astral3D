@@ -1,9 +1,9 @@
 import { ViewportGizmo, GizmoOptions } from "three-viewport-gizmo";
 import CameraControls from "camera-controls";
-import { useAddSignal, useRemoveSignal } from "@/hooks";
-import App from "@/core/app/App";
+import { useAddSignal, useRemoveSignal } from "#/hooks";
+import App from "#/core/app/App";
 import Viewer from "../Viewer";
-import {getOsTheme} from "@/utils";
+import { getOsTheme } from "#/utils";
 
 let _updateFn;
 export class Helper {
@@ -162,7 +162,7 @@ export class Helper {
     dispose() {
         if (this.gizmo) this.gizmo.dispose();
 
-        if(_updateFn){
+        if (_updateFn) {
             useRemoveSignal('cameraChanged', _updateFn);
             useRemoveSignal('sceneResize', _updateFn);
             _updateFn = null;

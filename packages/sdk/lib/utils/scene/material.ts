@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import * as THREE from "three";
-import Loader from "@/core/loader/Loader.ts";
-import App from "@/core/app/App.ts";
+import Loader from "#/core/loader/Loader.ts";
+import App from "#/core/app/App.ts";
 
 /**
  * 解析材质zip包
@@ -39,7 +39,7 @@ export function parseMaterialZip(zipFile: File): Promise<THREE.MeshStandardMater
                     materialJson.textures.bump = relativePath;
                 } else if (relativePath.includes("displacement")) {
                     materialJson.textures.displacement = relativePath;
-                }  else if (relativePath.includes("emissive")) {
+                } else if (relativePath.includes("emissive")) {
                     materialJson.textures.emissive = relativePath;
                 } else if (relativePath.includes("alpha")) {
                     materialJson.textures.alpha = relativePath;
@@ -70,7 +70,7 @@ export function parseMaterialZip(zipFile: File): Promise<THREE.MeshStandardMater
 
         // 并行加载所有纹理
         const texturePromises = Object.entries(materialJson.textures).map(
-            async ([type, path]:any) => {
+            async ([type, path]: any) => {
                 const textureFile = zipContent.file(path);
                 if (!textureFile) {
                     console.warn(`Texture file not found: ${path}`);

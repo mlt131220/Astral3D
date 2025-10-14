@@ -17,7 +17,7 @@ import { parseDxfMTextContent } from "@dxfom/mtext";
 import { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import { PickHelper } from "./pickHelper";
 import { DrawRect } from "./drawRect";
-import log from '@/utils/log/Logger';
+import log from '#/utils/log/Logger';
 
 let signal, middleObject;
 let scene, helpScene, camera, renderer, inputElement, font, data;
@@ -39,7 +39,7 @@ let parsedBlocks: string[] = [];
 let options = {
     bgColor: 0x000000,
     contrastColor: 0xffffff,
-    fontUrl:''
+    fontUrl: ''
 }, contrastEntity: any = [];
 
 // canvas默认宽高

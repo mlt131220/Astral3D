@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { TeapotGeometry } from '@/core/geometries/TeapotGeometry.js';
-import App from "@/core/app/App";
+import { TeapotGeometry } from '#/core/geometries/TeapotGeometry.js';
+import App from "#/core/app/App";
 
 //组
 export function Group() {
@@ -70,7 +70,7 @@ export function DoubleCone() {
     const geometry = new THREE.LatheGeometry();
     const mesh = new THREE.Mesh(
         geometry,
-        new THREE.MeshStandardMaterial({side: THREE.DoubleSide})
+        new THREE.MeshStandardMaterial({ side: THREE.DoubleSide })
     );
     mesh.name = 'DoubleCone';
 

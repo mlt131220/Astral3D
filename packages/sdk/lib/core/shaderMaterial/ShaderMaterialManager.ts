@@ -1,12 +1,12 @@
-import {ShaderMaterial, Vector2} from "three";
-import {useAddSignal} from "@/hooks";
-import {CircleGridShaderMaterial} from "@/core/shaderMaterial/modules/CircleGridShaderMaterial";
-import {DynamicCheckerboardShaderMaterial} from "@/core/shaderMaterial/modules/DynamicCheckerboardShaderMaterial";
-import {FlickerShaderMaterial} from "@/core/shaderMaterial/modules/FlickerShaderMaterial";
-import {SlowSmokeShaderMaterial} from "@/core/shaderMaterial/modules/SlowSmokeShaderMaterial";
-import {StreamerWallShaderMaterial} from "@/core/shaderMaterial/modules/StreamerWallShaderMaterial";
-import { SnowingShaderMaterial } from "@/core/shaderMaterial/modules/SnowingShaderMaterial";
-import App from "@/core/app/App";
+import { ShaderMaterial, Vector2 } from "three";
+import { useAddSignal } from "#/hooks";
+import { CircleGridShaderMaterial } from "#/core/shaderMaterial/modules/CircleGridShaderMaterial";
+import { DynamicCheckerboardShaderMaterial } from "#/core/shaderMaterial/modules/DynamicCheckerboardShaderMaterial";
+import { FlickerShaderMaterial } from "#/core/shaderMaterial/modules/FlickerShaderMaterial";
+import { SlowSmokeShaderMaterial } from "#/core/shaderMaterial/modules/SlowSmokeShaderMaterial";
+import { StreamerWallShaderMaterial } from "#/core/shaderMaterial/modules/StreamerWallShaderMaterial";
+import { SnowingShaderMaterial } from "#/core/shaderMaterial/modules/SnowingShaderMaterial";
+import App from "#/core/app/App";
 
 interface IShaderMaterialClass {
     Name: string,
@@ -39,7 +39,7 @@ export class ShaderMaterialManager {
     }
 
     init() {
-        if(!App.metadata._ShaderMaterialClassMap) return;
+        if (!App.metadata._ShaderMaterialClassMap) return;
 
         this.classMap = App.metadata._ShaderMaterialClassMap;
         if (this.classMap) {

@@ -1,5 +1,5 @@
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -15,7 +15,7 @@ class SetMaterialColorCommand extends Command {
 	public newValue;
 	public attributeName;
 
-	constructor(object, attributeName, newValue, materialSlot ) {
+	constructor(object, attributeName, newValue, materialSlot) {
 		super();
 
 		this.type = 'SetMaterialColorCommand';
@@ -32,16 +32,16 @@ class SetMaterialColorCommand extends Command {
 	}
 
 	execute() {
-		this.material[ this.attributeName ].setHex( this.newValue );
-		useDispatchSignal("materialChanged",this.material);
+		this.material[this.attributeName].setHex(this.newValue);
+		useDispatchSignal("materialChanged", this.material);
 	}
 
 	undo() {
-		this.material[ this.attributeName ].setHex( this.oldValue );
-		useDispatchSignal("materialChanged",this.material);
+		this.material[this.attributeName].setHex(this.oldValue);
+		useDispatchSignal("materialChanged", this.material);
 	}
 
-	update( cmd ) {
+	update(cmd) {
 		this.newValue = cmd.newValue;
 	}
 
@@ -56,10 +56,10 @@ class SetMaterialColorCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
-		this.object = App.getObjectByUuid( json.objectUuid );
+		this.object = App.getObjectByUuid(json.objectUuid);
 		this.attributeName = json.attributeName;
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;

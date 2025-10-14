@@ -1,4 +1,4 @@
-import {defineConfig, loadEnv} from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import path from 'path';
 import dotenv from "dotenv";
 import vue from '@vitejs/plugin-vue';
@@ -11,9 +11,9 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 // 自动按需引入Naive UI组件
 import Components from 'unplugin-vue-components/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
-import {wrapperEnv, createPlugins} from "@astral3d/build-vite-plugins";
+import { wrapperEnv, createPlugins } from "@astral3d/build-vite-plugins";
 
-export default defineConfig(async ({mode, command}) => {
+export default defineConfig(async ({ mode, command }) => {
     const root = process.cwd();
     const env = loadEnv(mode, root);
     //LoadEnv读取的布尔类型是一个字符串。此函数可以转换为布尔类型
@@ -24,7 +24,8 @@ export default defineConfig(async ({mode, command}) => {
         VITE_BUILD_COMPRESS,
         VITE_BUILD_COMPRESS_DELETE_ORIGIN_FILE,
         VITE_ENABLE_ANALYZE,
-        VITE_ENABLE_CONFIG_GENERATE
+        VITE_ENABLE_CONFIG_GENERATE,
+        VITE_USE_SDK_SOURCE
     } = viteEnv;
 
     const isBuild = command === 'build';
@@ -36,11 +37,11 @@ export default defineConfig(async ({mode, command}) => {
             deleteOriginFile: VITE_BUILD_COMPRESS_DELETE_ORIGIN_FILE,
         },
         enableAnalyze: VITE_ENABLE_ANALYZE,
-        enableConfig:VITE_ENABLE_CONFIG_GENERATE
+        enableConfig: VITE_ENABLE_CONFIG_GENERATE
     });
 
     // 为@monaco-editor定义define
-    const define:any = {
+    const define: any = {
         "process.env": process.env
     };
     if (mode === "development") {
@@ -48,6 +49,17 @@ export default defineConfig(async ({mode, command}) => {
         define.global = {};
     } else if (mode === "production") {
         dotenv.config({ path: ".env.production" });
+    }
+
+    const alias: Record<string, string> = {
+        '~': path.resolve(__dirname, './types'),
+        '@': path.resolve(__dirname, './src'),
+    }
+    const optimizeDepsExclude = ['keyframe-resample', 'draco3dgltf']
+    if (VITE_USE_SDK_SOURCE) {
+        alias['@astral3d/engine'] = path.resolve(__dirname, '../sdk/lib/index.ts')
+        alias['#'] = path.resolve(__dirname, '../sdk/lib')
+        optimizeDepsExclude.push('@astral3d/engine')
     }
 
     return {
@@ -81,7 +93,7 @@ export default defineConfig(async ({mode, command}) => {
             }
         },
         root,
-        plugins:[
+        plugins: [
             vue(),
             Unocss(),
             // cesium(),
@@ -164,14 +176,11 @@ export default defineConfig(async ({mode, command}) => {
             ...plugins
         ],
         resolve: {
-            alias: {
-                '~': path.resolve(__dirname, './types'),
-                '@': path.resolve(__dirname, './src'),
-            },
+            alias,
             extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
         },
         optimizeDeps: {
-            exclude: ['keyframe-resample','draco3dgltf'],
+            exclude: optimizeDepsExclude,
         },
         server: {
             host: true,

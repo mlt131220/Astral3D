@@ -1,6 +1,6 @@
-import {Object3D} from "three";
+import { Object3D } from "three";
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -13,7 +13,7 @@ class RemoveScriptCommand extends Command {
 	private script: any;
 	private index: number = -1;
 
-	constructor(object:Object3D, script) {
+	constructor(object: Object3D, script) {
 		super();
 
 		this.type = 'RemoveScriptCommand';
@@ -27,23 +27,23 @@ class RemoveScriptCommand extends Command {
 	}
 
 	execute() {
-		if (App.scripts[ this.object.uuid ] === undefined) return;
+		if (App.scripts[this.object.uuid] === undefined) return;
 
 		if (this.index !== -1) {
-			App.scripts[this.object.uuid].splice( this.index, 1 );
+			App.scripts[this.object.uuid].splice(this.index, 1);
 		}
 
-		useDispatchSignal("scriptRemoved",this.object,this.script);
+		useDispatchSignal("scriptRemoved", this.object, this.script);
 	}
 
 	undo() {
-		if (App.scripts[ this.object.uuid ] === undefined) {
-			App.scripts[ this.object.uuid ] = [];
+		if (App.scripts[this.object.uuid] === undefined) {
+			App.scripts[this.object.uuid] = [];
 		}
 
 		App.scripts[this.object.uuid].splice(this.index, 0, this.script);
 
-		useDispatchSignal("scriptAdded",this.object,this.script);
+		useDispatchSignal("scriptAdded", this.object, this.script);
 	}
 
 	toJSON() {
@@ -57,7 +57,7 @@ class RemoveScriptCommand extends Command {
 	}
 
 	fromJSON(json) {
-		super.fromJSON( json );
+		super.fromJSON(json);
 
 		this.script = json.script;
 		this.index = json.index;

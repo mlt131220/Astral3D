@@ -4,7 +4,7 @@
  * @description 下雪特效着色器
  */
 import { ShaderChunk, ShaderMaterial, Vector2, Vector4, TextureLoader, RepeatWrapping, DoubleSide } from "three";
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 
 const vertex = `
 ${ShaderChunk.common}
@@ -148,7 +148,7 @@ export class SnowingShaderMaterial {
                 uNoiseMap: { value: null },
                 uTexture: { value: null },
                 uHasTexture: { value: 0.0 },
-                uColor: { value: new Vector4(1.0,1.0,1.0,1.0) }
+                uColor: { value: new Vector4(1.0, 1.0, 1.0, 1.0) }
             },
             vertexShader: vertex,
             fragmentShader: fragment,

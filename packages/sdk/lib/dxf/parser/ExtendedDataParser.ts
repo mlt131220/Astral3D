@@ -1,4 +1,4 @@
-import log from '@/utils/log/Logger';
+import log from '#/utils/log/Logger';
 
 export default class ExtendedDataParser {
     private appName: null;
@@ -116,6 +116,6 @@ export default class ExtendedDataParser {
     }
 
     _CreateValue(code, value) {
-        return {code, value}
+        return { code, value }
     }
 }

@@ -9,119 +9,119 @@ import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { unzipSync, strFromU8 } from 'three/examples/jsm/libs/fflate.module.js';
 import { AddObjectCommand } from '../commands/AddObjectCommand';
 import { SetSceneCommand } from '../commands/Commands';
-import {useDispatchSignal} from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import { ObjectLoader } from './ObjectLoader';
-import App from "@/core/app/App";
+import App from "#/core/app/App";
 import MaterialCreator = MTLLoader.MaterialCreator;
 
 const LoaderUtils = {
-	createFilesMap: function (files: FileList | File[]) {
-		const map = {};
+    createFilesMap: function (files: FileList | File[]) {
+        const map = {};
 
-		for ( let i = 0; i < files.length; i ++ ) {
-			const file = files[ i ];
-			map[ file.name ] = file;
-		}
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            map[file.name] = file;
+        }
 
-		return map;
-	},
-	getFilesFromItemList: function ( items: DataTransferItem[], onDone: (files: File[], filesMap) => void ) {
-		// TOFIX: setURLModifier() breaks when the file being loaded is not in root
-		let itemsCount = 0;
-		let itemsTotal = 0;
+        return map;
+    },
+    getFilesFromItemList: function (items: DataTransferItem[], onDone: (files: File[], filesMap) => void) {
+        // TOFIX: setURLModifier() breaks when the file being loaded is not in root
+        let itemsCount = 0;
+        let itemsTotal = 0;
 
-		const files: File[] = [];
-		const filesMap = {};
+        const files: File[] = [];
+        const filesMap = {};
 
-		function onEntryHandled() {
+        function onEntryHandled() {
 
-			itemsCount ++;
+            itemsCount++;
 
-			if ( itemsCount === itemsTotal ) {
+            if (itemsCount === itemsTotal) {
 
-				onDone( files, filesMap );
+                onDone(files, filesMap);
 
-			}
+            }
 
-		}
+        }
 
-		function handleEntry( entry ) {
+        function handleEntry(entry) {
 
-			if ( entry.isDirectory ) {
+            if (entry.isDirectory) {
 
-				const reader = entry.createReader();
-				reader.readEntries( function ( entries ) {
+                const reader = entry.createReader();
+                reader.readEntries(function (entries) {
 
-					for ( let i = 0; i < entries.length; i ++ ) {
+                    for (let i = 0; i < entries.length; i++) {
 
-						handleEntry( entries[ i ] );
+                        handleEntry(entries[i]);
 
-					}
+                    }
 
-					onEntryHandled();
+                    onEntryHandled();
 
-				} );
+                });
 
-			} else if ( entry.isFile ) {
+            } else if (entry.isFile) {
 
-				entry.file( function ( file ) {
+                entry.file(function (file) {
 
-					files.push( file );
+                    files.push(file);
 
-					filesMap[ entry.fullPath.slice( 1 ) ] = file;
-					onEntryHandled();
+                    filesMap[entry.fullPath.slice(1)] = file;
+                    onEntryHandled();
 
-				} );
+                });
 
-			}
+            }
 
-			itemsTotal ++;
+            itemsTotal++;
 
-		}
+        }
 
-		for ( let i = 0; i < items.length; i ++ ) {
+        for (let i = 0; i < items.length; i++) {
 
-			const item = items[ i ];
+            const item = items[i];
 
-			if ( item.kind === 'file' ) {
+            if (item.kind === 'file') {
 
-				handleEntry( item.webkitGetAsEntry() );
+                handleEntry(item.webkitGetAsEntry());
 
-			}
+            }
 
-		}
+        }
 
-	}
+    }
 
 };
 
 class Loader {
-	protected texturePath:string = '';
-	protected _objectLoader:ObjectLoader | null = null;
-	protected _dracoLoader:DRACOLoader | null = null;
-	protected _ktx2Loader:KTX2Loader | null = null;
-	public _ifcLoader:any = null;
-    protected rgbeLoader:RGBELoader | null = null;
-    protected tgaLoader:TGALoader | null = null;
-    protected _exrLoader:EXRLoader | null = null;
-    protected textureLoader:THREE.TextureLoader | null = null;
+    protected texturePath: string = '';
+    protected _objectLoader: ObjectLoader | null = null;
+    protected _dracoLoader: DRACOLoader | null = null;
+    protected _ktx2Loader: KTX2Loader | null = null;
+    public _ifcLoader: any = null;
+    protected rgbeLoader: RGBELoader | null = null;
+    protected tgaLoader: TGALoader | null = null;
+    protected _exrLoader: EXRLoader | null = null;
+    protected textureLoader: THREE.TextureLoader | null = null;
 
-	constructor(){}
+    constructor() { }
 
-    get objectLoader():ObjectLoader{
-        if(!this._objectLoader){
+    get objectLoader(): ObjectLoader {
+        if (!this._objectLoader) {
             this._objectLoader = new ObjectLoader();
         }
 
         return this._objectLoader;
     }
 
-    set objectLoader(value:ObjectLoader | null){
+    set objectLoader(value: ObjectLoader | null) {
         this._objectLoader = value;
     }
 
-    get dracoLoader():DRACOLoader{
-        if(!this._dracoLoader){
+    get dracoLoader(): DRACOLoader {
+        if (!this._dracoLoader) {
             this._dracoLoader = new DRACOLoader();
             this._dracoLoader.setDecoderPath(new URL(import.meta.env.BASE_URL + 'libs/draco/gltf', import.meta.url).href + "/");
         }
@@ -129,43 +129,43 @@ class Loader {
         return this._dracoLoader;
     }
 
-    set dracoLoader(value:DRACOLoader | null) {
+    set dracoLoader(value: DRACOLoader | null) {
         this._dracoLoader = value;
     }
 
-    get ktx2Loader():KTX2Loader{
-        if(!this._ktx2Loader){
+    get ktx2Loader(): KTX2Loader {
+        if (!this._ktx2Loader) {
             this._ktx2Loader = new KTX2Loader();
             this._ktx2Loader.setTranscoderPath(new URL(import.meta.env.BASE_URL + 'libs/basis', import.meta.url).href + "/");
-            useDispatchSignal("rendererDetectKTX2Support",this._ktx2Loader);
+            useDispatchSignal("rendererDetectKTX2Support", this._ktx2Loader);
         }
 
         return this._ktx2Loader;
     }
 
-    set ktx2Loader(value:KTX2Loader | null) {
+    set ktx2Loader(value: KTX2Loader | null) {
         this._ktx2Loader = value;
     }
 
-    get exrLoader():EXRLoader{
-        if(!this._exrLoader){
+    get exrLoader(): EXRLoader {
+        if (!this._exrLoader) {
             this._exrLoader = new EXRLoader();
         }
 
         return this._exrLoader;
     }
 
-    set exrLoader(value:EXRLoader | null) {
+    set exrLoader(value: EXRLoader | null) {
         this._exrLoader = value;
     }
 
-	loadItemList(items) {
-		LoaderUtils.getFilesFromItemList( items, ( files, filesMap )=>{
-			this.loadFiles( files, filesMap);
-		} );
-	}
+    loadItemList(items) {
+        LoaderUtils.getFilesFromItemList(items, (files, filesMap) => {
+            this.loadFiles(files, filesMap);
+        });
+    }
 
-	loadFiles(files, filesMap): Promise<THREE.Object3D[]> {
+    loadFiles(files, filesMap): Promise<THREE.Object3D[]> {
         return new Promise((resolve, reject) => {
             const promises: Promise<THREE.Object3D>[] = [];
 
@@ -215,13 +215,13 @@ class Loader {
                         reject(error);
                     });
                 }
-            }else{
+            } else {
                 reject("No files to load.");
             }
         })
-	}
+    }
 
-	loadFile(file, manager:THREE.LoadingManager = new THREE.LoadingManager(),mtlMaterials:MaterialCreator | null = null,addToScene = true):Promise<THREE.Object3D> {
+    loadFile(file, manager: THREE.LoadingManager = new THREE.LoadingManager(), mtlMaterials: MaterialCreator | null = null, addToScene = true): Promise<THREE.Object3D> {
         return new Promise((resolve, reject) => {
             const filename = file.name;
             const extension = filename.split('.').pop().toLowerCase();
@@ -410,7 +410,7 @@ class Loader {
 
                             worker.onmessage = (event) => {
                                 event.data.metadata = { version: 2 };
-                                this.handleJSON(event.data,addToScene).then(object => resolve(object as THREE.Object3D)).catch(error => reject(error));
+                                this.handleJSON(event.data, addToScene).then(object => resolve(object as THREE.Object3D)).catch(error => reject(error));
                             };
 
                             worker.postMessage(Date.now());
@@ -426,7 +426,7 @@ class Loader {
                             App.log.error(error as string);
                             return;
                         }
-                        this.handleJSON(data,addToScene).then(object => resolve(object as THREE.Object3D)).catch(error => reject(error));
+                        this.handleJSON(data, addToScene).then(object => resolve(object as THREE.Object3D)).catch(error => reject(error));
                     }, false);
                     reader.readAsText(file);
 
@@ -434,13 +434,13 @@ class Loader {
                 case 'ifc':
                     reader.addEventListener('load', async (event) => {
                         if (!this._ifcLoader) {
-                            const { IFCLoader }  = await import("web-ifc-three/IFCLoader");
+                            const { IFCLoader } = await import("web-ifc-three/IFCLoader");
 
                             this._ifcLoader = new IFCLoader();
 
                             const ifcWorkerUrl = new URL(import.meta.env.BASE_URL + 'libs/web-ifc/IFCWorker.js', import.meta.url).href;
                             this._ifcLoader.ifcManager.useWebWorkers(true, ifcWorkerUrl).then(async () => {
-                                if(!this._ifcLoader) return;
+                                if (!this._ifcLoader) return;
 
                                 await this._ifcLoader.ifcManager.setWasmPath('/');
 
@@ -762,7 +762,7 @@ class Loader {
                     break;
                 case 'zip':
                     reader.addEventListener('load', (event) => {
-                        this.handleZIP(event.target?.result,addToScene).then(object => resolve(object as THREE.Object3D)).catch(error => reject(error));
+                        this.handleZIP(event.target?.result, addToScene).then(object => resolve(object as THREE.Object3D)).catch(error => reject(error));
                     }, false);
                     reader.readAsArrayBuffer(file);
                     break;
@@ -772,9 +772,9 @@ class Loader {
                     break;
             }
         })
-	}
+    }
 
-	handleJSON(data,addToScene = true) {
+    handleJSON(data, addToScene = true) {
         return new Promise((resolve, reject) => {
             if (data.metadata === undefined) { // 2.0
                 data.metadata = { type: 'Geometry' };
@@ -828,9 +828,9 @@ class Loader {
                     break;
             }
         })
-	}
+    }
 
-	async handleZIP(contents,addToScene = true) {
+    async handleZIP(contents, addToScene = true) {
         return new Promise(async (resolve, reject) => {
             try {
                 const zip = unzipSync(new Uint8Array(contents));
@@ -848,7 +848,7 @@ class Loader {
                 }
 
                 // 20250904： 新增3dtiles支持
-                if(zip['tileset.json']){
+                if (zip['tileset.json']) {
 
                 }
 
@@ -902,7 +902,7 @@ class Loader {
                             {
                                 const loader = await this.createGLTFLoader(manager);
 
-                                loader.parse(strFromU8(file), '', (result)=> {
+                                loader.parse(strFromU8(file), '', (result) => {
                                     const scene = result.scene;
                                     scene.animations.push(...result.animations);
                                     addToScene && App.execute(new AddObjectCommand(scene));
@@ -915,40 +915,40 @@ class Loader {
                             }
                     }
                 }
-            }catch (error) {
+            } catch (error) {
                 reject(error);
             }
         })
-	}
+    }
 
-	async createGLTFLoader(manager?:THREE.LoadingManager) {
-		const { MeshoptDecoder } = await import( 'three/examples/jsm/libs/meshopt_decoder.module.js' );
+    async createGLTFLoader(manager?: THREE.LoadingManager) {
+        const { MeshoptDecoder } = await import('three/examples/jsm/libs/meshopt_decoder.module.js');
 
-		const loader = new GLTFLoader(manager);
-		loader.setDRACOLoader(this.dracoLoader);
-		loader.setKTX2Loader(this.ktx2Loader);
-		loader.setMeshoptDecoder(MeshoptDecoder);
+        const loader = new GLTFLoader(manager);
+        loader.setDRACOLoader(this.dracoLoader);
+        loader.setKTX2Loader(this.ktx2Loader);
+        loader.setMeshoptDecoder(MeshoptDecoder);
 
-		return loader;
-	}
+        return loader;
+    }
 
-    disposeGLTFLoaderEffects(loader:any){
-        if(this._dracoLoader && loader.dracoLoader === this._dracoLoader){
+    disposeGLTFLoaderEffects(loader: any) {
+        if (this._dracoLoader && loader.dracoLoader === this._dracoLoader) {
             this._dracoLoader.dispose();
             this._dracoLoader = null;
 
             loader.dracoLoader = null;
-        }else{
+        } else {
             loader.dracoLoader?.dispose();
             loader.dracoLoader = null;
         }
 
-        if(this._ktx2Loader && loader.ktx2Loader === this._ktx2Loader){
+        if (this._ktx2Loader && loader.ktx2Loader === this._ktx2Loader) {
             this._ktx2Loader?.dispose();
             this._ktx2Loader = null;
 
             loader.ktx2Loader = null;
-        }else{
+        } else {
             loader.ktx2Loader.dispose();
             loader.ktx2Loader = null;
         }
@@ -956,61 +956,61 @@ class Loader {
         loader.meshoptDecoder = null;
     }
 
-	loadUrlTexture(extension: string, url: string, onload?: (tex: THREE.Texture) => void,onerror?: (err: any) => void) {
-		switch (extension) {
-			case 'hdr': {
-                if(!this.rgbeLoader) this.rgbeLoader = new RGBELoader();
+    loadUrlTexture(extension: string, url: string, onload?: (tex: THREE.Texture) => void, onerror?: (err: any) => void) {
+        switch (extension) {
+            case 'hdr': {
+                if (!this.rgbeLoader) this.rgbeLoader = new RGBELoader();
 
                 this.rgbeLoader.setDataType(THREE.HalfFloatType);
-				return this.rgbeLoader.load(url, (hdrTexture) => {
+                return this.rgbeLoader.load(url, (hdrTexture) => {
                     hdrTexture.wrapS = THREE.RepeatWrapping;
                     hdrTexture.wrapT = THREE.RepeatWrapping;
                     hdrTexture.needsUpdate = true;
 
-					onload && onload(hdrTexture);
-				},()=>{},(err)=>{
+                    onload && onload(hdrTexture);
+                }, () => { }, (err) => {
                     onerror && onerror(err);
                 });
-			}
-			case 'tga': {
-                if(!this.tgaLoader) this.tgaLoader = new TGALoader();
+            }
+            case 'tga': {
+                if (!this.tgaLoader) this.tgaLoader = new TGALoader();
 
-				return this.tgaLoader.load(url, (tagTex) => {
+                return this.tgaLoader.load(url, (tagTex) => {
                     tagTex.wrapS = THREE.RepeatWrapping;
                     tagTex.wrapT = THREE.RepeatWrapping;
                     tagTex.needsUpdate = true;
 
-					onload && onload(tagTex);
-				},()=>{},(err)=>{
+                    onload && onload(tagTex);
+                }, () => { }, (err) => {
                     onerror && onerror(err);
                 });
-			}
-			case "exr": {
-				return this.exrLoader.load(url, (exrTex) => {
+            }
+            case "exr": {
+                return this.exrLoader.load(url, (exrTex) => {
                     exrTex.wrapS = THREE.RepeatWrapping;
                     exrTex.wrapT = THREE.RepeatWrapping;
                     exrTex.needsUpdate = true;
 
-					onload && onload(exrTex);
-				},()=>{},(err)=>{
+                    onload && onload(exrTex);
+                }, () => { }, (err) => {
                     onerror && onerror(err);
                 });
-			}
-			default: {
-                if(!this.textureLoader) this.textureLoader = new THREE.TextureLoader();
+            }
+            default: {
+                if (!this.textureLoader) this.textureLoader = new THREE.TextureLoader();
 
-				return this.textureLoader.load(url, (tex) => {
+                return this.textureLoader.load(url, (tex) => {
                     tex.wrapS = THREE.RepeatWrapping;
                     tex.wrapT = THREE.RepeatWrapping;
                     tex.needsUpdate = true;
 
-					onload && onload(tex);
-				},()=>{},(err)=>{
+                    onload && onload(tex);
+                }, () => { }, (err) => {
                     onerror && onerror(err);
                 });
-			}
-		}
-	}
+            }
+        }
+    }
 }
 
 const loader = new Loader();

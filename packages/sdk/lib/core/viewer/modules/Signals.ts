@@ -1,18 +1,18 @@
 import * as THREE from "three";
-import {RoomEnvironment} from "three/examples/jsm/environments/RoomEnvironment.js";
-import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass.js";
-import {Effect} from "./Effect";
-import {useAddSignal} from "@/hooks";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { Effect } from "./Effect";
+import { useAddSignal } from "#/hooks";
 import Viewer from "../Viewer";
-import App from "@/core/app/App";
-import {focusObject} from "@/utils/scene/controls.ts";
+import App from "#/core/app/App";
+import { focusObject } from "#/utils/scene/controls.ts";
 
 export class Signals {
     private readonly viewer: Viewer;
 
     private useBackgroundAsEnvironment = false;
 
-    constructor(viewer:Viewer) {
+    constructor(viewer: Viewer) {
         this.viewer = viewer;
 
         this.init();
@@ -51,15 +51,15 @@ export class Signals {
         useAddSignal("showGridChanged", this.showGridChanged.bind(this));
         useAddSignal("showHelpersChanged", this.showHelpersChanged.bind(this));
 
-        useAddSignal("scriptAdded",this.scriptAdded.bind(this));
-        useAddSignal("scriptRemoved",this.scriptRemoved.bind(this));
-        useAddSignal("scriptChanged",this.scriptChanged.bind(this));
+        useAddSignal("scriptAdded", this.scriptAdded.bind(this));
+        useAddSignal("scriptRemoved", this.scriptRemoved.bind(this));
+        useAddSignal("scriptChanged", this.scriptChanged.bind(this));
     }
 
     /**
      * 判断对象是否是可射线选中的
      */
-    objectIsCanPick(object:THREE.Object3D | null){
+    objectIsCanPick(object: THREE.Object3D | null) {
         return object !== null && object !== this.viewer.scene && object !== this.viewer.camera;
     }
 
@@ -67,7 +67,7 @@ export class Signals {
      * 清空
      */
     sceneCleared() {
-        this.viewer.modules.controls.setTarget(0, 0, 0,true);
+        this.viewer.modules.controls.setTarget(0, 0, 0, true);
         this.viewer.pathtracer?.reset();
 
         this.viewer.css2DRenderer.domElement.innerHTML = "";
@@ -80,7 +80,7 @@ export class Signals {
         this.viewer.renderer.toneMapping = rendererConfig.toneMapping;
         this.viewer.renderer.toneMappingExposure = rendererConfig.toneMappingExposure
 
-        if(this.viewer.options.hdr){
+        if (this.viewer.options.hdr) {
             this.viewer.loadEnv(true);
         }
 
@@ -100,7 +100,7 @@ export class Signals {
      * 模型变换控制器吸附距离改变
      * @param dist
      */
-    snapChanged(dist:number) {
+    snapChanged(dist: number) {
         this.viewer.modules.transformControls?.setTranslationSnap(dist);
     }
 
@@ -108,22 +108,22 @@ export class Signals {
      * 模型变换控制器坐标系改变
      * @param space
      */
-    spaceChanged(space:"world" | "local") {
+    spaceChanged(space: "world" | "local") {
         this.viewer.modules.transformControls?.setSpace(space);
     }
 
     /**
      * 启用/禁用后处理
      */
-    effectEnabledChange(enabled:boolean){
-        if(enabled){
+    effectEnabledChange(enabled: boolean) {
+        if (enabled) {
             this.viewer.selectionBox.visible = false;
 
             if (this.objectIsCanPick(App.selected) && this.viewer.modules.effect.outlinePass) {
                 this.viewer.modules.effect.outlinePass.selectedObjects = [App.selected as THREE.Object3D];
             }
-        }else{
-            if(this.viewer.modules.effect.outlinePass){
+        } else {
+            if (this.viewer.modules.effect.outlinePass) {
                 this.viewer.modules.effect.outlinePass.selectedObjects = [];
             }
 
@@ -158,11 +158,11 @@ export class Signals {
         this.viewer.engineCreated(newRenderer);
     }
 
-    rendererConfigUpdate(){
+    rendererConfigUpdate() {
         this.viewer.createEngine();
     }
 
-    rendererDetectKTX2Support( ktx2Loader ) {
+    rendererDetectKTX2Support(ktx2Loader) {
         ktx2Loader.detectSupport(this.viewer.renderer);
     }
 
@@ -176,7 +176,7 @@ export class Signals {
      * @param backgroundIntensity
      * @param backgroundRotation
      */
-    sceneBackgroundChanged(backgroundType:"" | "Color" | "Texture" | "Equirectangular", backgroundColor:string, backgroundTexture, backgroundEquirectangularTexture, backgroundBlurriness:number,backgroundIntensity:number, backgroundRotation:number){
+    sceneBackgroundChanged(backgroundType: "" | "Color" | "Texture" | "Equirectangular", backgroundColor: string, backgroundTexture, backgroundEquirectangularTexture, backgroundBlurriness: number, backgroundIntensity: number, backgroundRotation: number) {
         this.viewer.scene.background = null;
 
         switch (backgroundType) {
@@ -205,7 +205,7 @@ export class Signals {
                 break;
         }
 
-        this.viewer.dispatchEvent({type:"onSceneBackgroundChange",backgroundType:backgroundType,background:this.viewer.scene.background})
+        this.viewer.dispatchEvent({ type: "onSceneBackgroundChange", backgroundType: backgroundType, background: this.viewer.scene.background })
 
         this.viewer.updatePTBackground();
         this.render();
@@ -216,7 +216,7 @@ export class Signals {
      * @param environmentType
      * @param environmentEquirectangularTexture
      */
-    sceneEnvironmentChanged(environmentType: '' | 'Background' | 'Equirectangular' | 'ModelViewer', environmentEquirectangularTexture: THREE.Texture){
+    sceneEnvironmentChanged(environmentType: '' | 'Background' | 'Equirectangular' | 'ModelViewer', environmentEquirectangularTexture: THREE.Texture) {
         this.viewer.scene.environment = null;
         this.useBackgroundAsEnvironment = false;
 
@@ -235,7 +235,7 @@ export class Signals {
                 }
                 break;
             case 'ModelViewer':
-                if(!this.viewer.pmremGenerator){
+                if (!this.viewer.pmremGenerator) {
                     // 创建一个PMREMGenerator，从立方体映射环境纹理生成预过滤的 Mipmap 辐射环境贴图
                     this.viewer.pmremGenerator = new THREE.PMREMGenerator(this.viewer.renderer);
                     this.viewer.pmremGenerator.compileEquirectangularShader();
@@ -246,7 +246,7 @@ export class Signals {
                 break;
         }
 
-        this.viewer.dispatchEvent({type:"onSceneEnvironmentChange",environmentType:environmentType,environment:this.viewer.scene.environment})
+        this.viewer.dispatchEvent({ type: "onSceneEnvironmentChange", environmentType: environmentType, environment: this.viewer.scene.environment })
 
         this.viewer.updatePTEnvironment();
 
@@ -256,7 +256,7 @@ export class Signals {
     /**
      * 手动场景渲染
      */
-    sceneGraphChanged(){
+    sceneGraphChanged() {
         this.viewer.initPT();
         this.render();
     }
@@ -264,7 +264,7 @@ export class Signals {
     /**
      * 切换主相机
      */
-    cameraChanged(){
+    cameraChanged() {
         this.viewer.pathtracer?.reset();
         this.render();
     }
@@ -272,16 +272,16 @@ export class Signals {
     /**
      * 场景主相机变更
      */
-    viewportCameraChanged(){
+    viewportCameraChanged() {
         const viewportCamera = App.viewportCamera;
-        if ( viewportCamera.isPerspectiveCamera || viewportCamera.isOrthographicCamera ) {
+        if (viewportCamera.isPerspectiveCamera || viewportCamera.isOrthographicCamera) {
             this.viewer.updateAspectRatio();
         }
 
         if (viewportCamera.isPerspectiveCamera) {
             (<THREE.PerspectiveCamera>viewportCamera).aspect = App.camera.aspect;
             viewportCamera.projectionMatrix.copy(App.camera.projectionMatrix);
-        } else if ( viewportCamera.isOrthographicCamera ) {
+        } else if (viewportCamera.isOrthographicCamera) {
             // TODO
         }
 
@@ -300,7 +300,7 @@ export class Signals {
      * @description 当开启OutlinePass后处理时，设置scene.overrideMaterial无效。
      * @link https://github.com/mrdoob/three.js/issues/30577
      */
-    viewportShadingChanged(){
+    viewportShadingChanged() {
         const viewportShading = App.viewportShading;
 
         switch (viewportShading) {
@@ -315,7 +315,7 @@ export class Signals {
                 break;
             case 'wireframe':
                 console.log("wireframe")
-                this.viewer.scene.overrideMaterial = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true});
+                this.viewer.scene.overrideMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
                 break;
         }
 
@@ -326,14 +326,14 @@ export class Signals {
      * 选中模型
      * @param object
      */
-    objectSelected(object){
+    objectSelected(object) {
         this.viewer.selectionBox.visible = false;
 
         this.viewer.modules.transformControls?.detach();
         if (this.objectIsCanPick(object)) {
-            if(this.viewer.modules.effect.enabled && this.viewer.modules.effect.outlinePass){
+            if (this.viewer.modules.effect.enabled && this.viewer.modules.effect.outlinePass) {
                 this.viewer.modules.effect.outlinePass.selectedObjects = [object];
-            }else{
+            } else {
                 this.viewer.box.setFromObject(object, true);
                 if (!this.viewer.box.isEmpty()) {
                     this.viewer.selectionBox.visible = true;
@@ -348,14 +348,14 @@ export class Signals {
      * 聚焦模型
      * @param object
      */
-    objectFocused(object){
-        focusObject(object,this.viewer.modules.controls);
+    objectFocused(object) {
+        focusObject(object, this.viewer.modules.controls);
     }
 
     /**
      * 场景新增模型
      */
-    objectAdded(){
+    objectAdded() {
         this.viewer.computedSceneBox3();
     }
 
@@ -363,7 +363,7 @@ export class Signals {
      * 模型属性变更
      * @param object
      */
-    objectChanged(object){
+    objectChanged(object) {
         if (App.selected === object) {
             this.viewer.box.setFromObject(object, true);
 
@@ -385,7 +385,7 @@ export class Signals {
      * 模型被移除
      * @param object
      */
-    objectRemoved(object){
+    objectRemoved(object) {
         this.viewer.modules.controls.enabled = true;
         if (this.viewer.modules.transformControls && object === this.viewer.modules.transformControls.object) {
             this.viewer.modules.transformControls.detach();
@@ -398,7 +398,7 @@ export class Signals {
      * geometry 变更
      * @param object
      */
-    geometryChanged(object){
+    geometryChanged(object) {
         if (object !== undefined) {
             this.viewer.box.setFromObject(object, true);
         }
@@ -410,7 +410,7 @@ export class Signals {
     /**
      * material 变更
      */
-    materialChanged(){
+    materialChanged() {
         this.viewer.updatePTMaterials();
         this.render();
     }
@@ -418,22 +418,22 @@ export class Signals {
     /**
      * windowResize
      */
-    sceneResize(){
+    sceneResize() {
         this.viewer.updateAspectRatio();
-        this.viewer.renderer?.setSize(this.viewer.container.offsetWidth,this.viewer.container.offsetHeight);
-        if(this.viewer.modules.effect.enabled && this.viewer.modules.effect.composer){
-            this.viewer.modules.effect.composer.setSize(this.viewer.container.offsetWidth,this.viewer.container.offsetHeight);
-            if(Effect.PassMap.has("FXAA")){
+        this.viewer.renderer?.setSize(this.viewer.container.offsetWidth, this.viewer.container.offsetHeight);
+        if (this.viewer.modules.effect.enabled && this.viewer.modules.effect.composer) {
+            this.viewer.modules.effect.composer.setSize(this.viewer.container.offsetWidth, this.viewer.container.offsetHeight);
+            if (Effect.PassMap.has("FXAA")) {
                 const FXAA = Effect.PassMap.get("FXAA") as ShaderPass;
                 const pixelRatio = this.viewer.renderer.getPixelRatio();
-                FXAA.material.uniforms[ 'resolution' ].value.x = 1 / (this.viewer.container.offsetWidth * pixelRatio);
-                FXAA.material.uniforms[ 'resolution' ].value.y = 1 / (this.viewer.container.offsetHeight * pixelRatio);
+                FXAA.material.uniforms['resolution'].value.x = 1 / (this.viewer.container.offsetWidth * pixelRatio);
+                FXAA.material.uniforms['resolution'].value.y = 1 / (this.viewer.container.offsetHeight * pixelRatio);
             }
         }
         this.viewer.pathtracer?.setSize();
 
-        this.viewer.css3DRenderer.setSize(this.viewer.container.offsetWidth,this.viewer.container.offsetHeight);
-        
+        this.viewer.css3DRenderer.setSize(this.viewer.container.offsetWidth, this.viewer.container.offsetHeight);
+
         this.viewer.modules.viewHelper.update();
 
         this.viewer.modules.tilesManage.resize();
@@ -446,8 +446,8 @@ export class Signals {
      * 是否显示场景网格
      * @param showGrid
      */
-    showGridChanged(showGrid:boolean){
-        if(this.viewer.grid){
+    showGridChanged(showGrid: boolean) {
+        if (this.viewer.grid) {
             this.viewer.grid.visible = showGrid;
         }
 
@@ -458,9 +458,9 @@ export class Signals {
      * 显示场景辅助线等
      * @param showHelpers
      */
-    showHelpersChanged(showHelpers:boolean){
+    showHelpersChanged(showHelpers: boolean) {
         this.viewer.showSceneHelpers = showHelpers;
-        if(this.viewer.modules.transformControls){
+        if (this.viewer.modules.transformControls) {
             this.viewer.modules.transformControls.enabled = showHelpers;
         }
 
@@ -470,30 +470,30 @@ export class Signals {
     /**
      * 添加脚本
      */
-    scriptAdded(object:THREE.Object3D, _:ISceneScript){
+    scriptAdded(object: THREE.Object3D, _: ISceneScript) {
         this.viewer.installScripts([object.uuid]);
     }
 
     /**
      * 移除脚本
      */
-    scriptRemoved(object:THREE.Object3D, sc:ISceneScript){
-        this.viewer.uninstallScriptsByUuid(object.uuid,sc.name);
+    scriptRemoved(object: THREE.Object3D, sc: ISceneScript) {
+        this.viewer.uninstallScriptsByUuid(object.uuid, sc.name);
     }
 
     /**
      * 脚本变化
      */
-    scriptChanged(attributeName:string,object:THREE.Object3D, sc:ISceneScript){
-        if(attributeName !== "source") return;
+    scriptChanged(attributeName: string, object: THREE.Object3D, sc: ISceneScript) {
+        if (attributeName !== "source") return;
 
-        this.viewer.installScripts([object.uuid],sc.name);
+        this.viewer.installScripts([object.uuid], sc.name);
     }
 
     /**
      * 渲染
      */
-    render(){
+    render() {
         this.viewer.render();
     }
 }

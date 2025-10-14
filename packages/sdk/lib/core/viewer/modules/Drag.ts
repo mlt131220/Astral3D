@@ -1,23 +1,23 @@
 import * as THREE from "three";
-import {DragControls} from '@/core/controls/DragControls.js';
-import {useDispatchSignal} from "@/hooks";
+import { DragControls } from '#/core/controls/DragControls.js';
+import { useDispatchSignal } from "#/hooks";
 import Viewer from "../Viewer";
-import App from "@/core/app/App";
-import {Measure} from "@/core/tools";
+import App from "#/core/app/App";
+import { Measure } from "#/core/tools";
 
 // dragControls 绑定函数
-let dragStartFn,dragFn, dragEndFn,clickblankFn;
+let dragStartFn, dragFn, dragEndFn, clickblankFn;
 
 class Drag {
     protected _dragObjects: THREE.Object3D[] = []; // 拖拽对象
     public dragControls: any;
-    private onDownPosition: { x: number; y: number } = {x:-1,y:-1};
+    private onDownPosition: { x: number; y: number } = { x: -1, y: -1 };
 
-    public viewer:Viewer;
-    public measureInstance:Measure | null = null;
+    public viewer: Viewer;
+    public measureInstance: Measure | null = null;
     public isDragging = false;
 
-    constructor(viewer:Viewer) {
+    constructor(viewer: Viewer) {
         this.viewer = viewer;
 
         // 物体拖拽控制器
@@ -72,7 +72,7 @@ class Drag {
     // 拖拽开始
     dragControlsStart(e) {
         // 右键拖拽不响应
-        if(e.e.button === 2 || !e.object.userData.type || !e.object.visible || !App.sceneHelpers.visible) return;
+        if (e.e.button === 2 || !e.object.userData.type || !e.object.visible || !App.sceneHelpers.visible) return;
 
         e.e.preventDefault();
 
@@ -83,7 +83,7 @@ class Drag {
         this.isDragging = true;
 
         // 记录拖拽按下的位置和对象
-        this.onDownPosition = {x: e.e.clientX, y: e.e.clientY};
+        this.onDownPosition = { x: e.e.clientX, y: e.e.clientY };
 
         switch (e.object.userData.type) {
             case "measure-marker":
@@ -100,7 +100,7 @@ class Drag {
     // 拖拽结束
     dragControlsEnd(e) {
         // 右键拖拽不响应
-        if(e.e.button === 2 || !e.object.visible || !App.sceneHelpers.visible) return;
+        if (e.e.button === 2 || !e.object.visible || !App.sceneHelpers.visible) return;
 
         // 拖拽结束启用其他控制器
         this.viewer.modules.controls.enabled = true;
@@ -111,8 +111,8 @@ class Drag {
         if (!e.object.userData.type) return;
 
         // 判断位置是否有变化,没有变化则为点击
-        if(this.onDownPosition.x === e.e.clientX && this.onDownPosition.y === e.e.clientY) {
-            if(e.object.userData.onClick){
+        if (this.onDownPosition.x === e.e.clientX && this.onDownPosition.y === e.e.clientY) {
+            if (e.object.userData.onClick) {
                 e.object.userData.onClick(e);
             }
         }
@@ -125,7 +125,7 @@ class Drag {
     }
 
     // 点击可拖拽物体之外
-    clickblank(e){
+    clickblank(e) {
         if (e.e.button === 2) return;
     }
 
@@ -138,4 +138,4 @@ class Drag {
     }
 }
 
-export {Drag};
+export { Drag };

@@ -1,7 +1,7 @@
 import { Command } from './Command';
-import { BufferGeometry,Mesh, InstancedBufferGeometry} from 'three';
+import { BufferGeometry, Mesh, InstancedBufferGeometry } from 'three';
 import { ObjectLoader } from '../loader/ObjectLoader';
-import {useDispatchSignal} from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -11,11 +11,11 @@ import App from "../app/App";
  * @constructor
  */
 class SetGeometryCommand extends Command {
-	object:Mesh;
+	object: Mesh;
 	private oldGeometry: BufferGeometry | InstancedBufferGeometry | undefined;
 	private newGeometry: BufferGeometry | InstancedBufferGeometry
 
-	constructor(object:Mesh, newGeometry:BufferGeometry) {
+	constructor(object: Mesh, newGeometry: BufferGeometry) {
 		super();
 
 		this.type = 'SetGeometryCommand';
@@ -23,7 +23,7 @@ class SetGeometryCommand extends Command {
 		this.updatable = true;
 
 		this.object = object;
-		this.oldGeometry = ( object !== undefined ) ? object.geometry : undefined;
+		this.oldGeometry = (object !== undefined) ? object.geometry : undefined;
 		this.newGeometry = newGeometry;
 
 	}
@@ -33,7 +33,7 @@ class SetGeometryCommand extends Command {
 		this.object.geometry = this.newGeometry;
 		this.object.geometry.computeBoundingSphere();
 
-		useDispatchSignal("geometryChanged",this.object);
+		useDispatchSignal("geometryChanged", this.object);
 		useDispatchSignal("sceneGraphChanged");
 	}
 
@@ -42,7 +42,7 @@ class SetGeometryCommand extends Command {
 		this.oldGeometry && (this.object.geometry = this.oldGeometry);
 		this.object.geometry.computeBoundingSphere();
 
-		useDispatchSignal("geometryChanged",this.object);
+		useDispatchSignal("geometryChanged", this.object);
 		useDispatchSignal("sceneGraphChanged");
 	}
 
@@ -60,16 +60,16 @@ class SetGeometryCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
-		this.object = App.getObjectByUuid( json.objectUuid ) as Mesh;
-		this.oldGeometry = parseGeometry( json.oldGeometry );
-		this.newGeometry = parseGeometry( json.newGeometry );
+		this.object = App.getObjectByUuid(json.objectUuid) as Mesh;
+		this.oldGeometry = parseGeometry(json.oldGeometry);
+		this.newGeometry = parseGeometry(json.newGeometry);
 
 		function parseGeometry(data) {
 			const loader = new ObjectLoader();
-			return loader.parseGeometries( [ data ] )[ data.uuid ];
+			return loader.parseGeometries([data])[data.uuid];
 		}
 	}
 }

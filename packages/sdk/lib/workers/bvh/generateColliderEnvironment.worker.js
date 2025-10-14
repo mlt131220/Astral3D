@@ -1,140 +1,147 @@
-import {Group, Mesh, MeshBasicMaterial, Matrix4, InstancedMesh} from "three";
-import {ObjectLoader} from "@/core/loader/ObjectLoader";
-import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import {StaticGeometryGenerator} from "three-mesh-bvh";
-import {TYPED_ARRAYS} from "../../../config/global";
-import DBStorage from "../../../core/utils/DBStorage";
+import { Group, Mesh, MeshBasicMaterial, Matrix4, InstancedMesh } from 'three'
+import { ObjectLoader } from '#/core/loader/ObjectLoader'
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { StaticGeometryGenerator } from 'three-mesh-bvh'
+import { TYPED_ARRAYS } from '../../../config/global'
+import DBStorage from '../../../core/utils/DBStorage'
 
 /**
  * 解析attr
  * @param attr Geometry Attributes
  */
 function parseAttr(attr) {
-    // 遍历attr的key,组织为新对象返回
-    const newAttr = {};
-    for (const key in attr) {
-        const item = attr[key];
-        if (item.array) {
-            newAttr[key] = {
-                itemSize: item.itemSize,
-                array: item.array,
-                count: item.count
-            }
-            item.array = new TYPED_ARRAYS[item.array.constructor.name]([]);
-        }
+  // 遍历attr的key,组织为新对象返回
+  const newAttr = {}
+  for (const key in attr) {
+    const item = attr[key]
+    if (item.array) {
+      newAttr[key] = {
+        itemSize: item.itemSize,
+        array: item.array,
+        count: item.count,
+      }
+      item.array = new TYPED_ARRAYS[item.array.constructor.name]([])
     }
+  }
 
-    return newAttr;
+  return newAttr
 }
 
-let basicMaterial = new MeshBasicMaterial();
+let basicMaterial = new MeshBasicMaterial()
 
-function getMeshByInstancedMesh(instancedMesh){
-    const meshes = [];
+function getMeshByInstancedMesh(instancedMesh) {
+  const meshes = []
 
-    const matrixWorld = instancedMesh.matrixWorld;
-    const count = instancedMesh.count;
+  const matrixWorld = instancedMesh.matrixWorld
+  const count = instancedMesh.count
 
-    for (let instanceId = 0; instanceId < count; instanceId++) {
-        const _mesh = new Mesh();
-        const _instanceLocalMatrix = new Matrix4();
-        const _instanceWorldMatrix = new Matrix4();
+  for (let instanceId = 0; instanceId < count; instanceId++) {
+    const _mesh = new Mesh()
+    const _instanceLocalMatrix = new Matrix4()
+    const _instanceWorldMatrix = new Matrix4()
 
-        _mesh.geometry = instancedMesh.geometry;
-        _mesh.material = instancedMesh.material;
+    _mesh.geometry = instancedMesh.geometry
+    _mesh.material = instancedMesh.material
 
-        // 计算每个实例的世界矩阵
-        instancedMesh.getMatrixAt(instanceId, _instanceLocalMatrix);
+    // 计算每个实例的世界矩阵
+    instancedMesh.getMatrixAt(instanceId, _instanceLocalMatrix)
 
-        _instanceWorldMatrix.multiplyMatrices(matrixWorld, _instanceLocalMatrix);
+    _instanceWorldMatrix.multiplyMatrices(matrixWorld, _instanceLocalMatrix)
 
-        // 网格表示这个单一实例
-        _mesh.matrixWorld = _instanceWorldMatrix;
+    // 网格表示这个单一实例
+    _mesh.matrixWorld = _instanceWorldMatrix
 
-        meshes.push(_mesh);
-    }
+    meshes.push(_mesh)
+  }
 
-    return meshes;
+  return meshes
 }
 
-onmessage = async function ({data}) {
-    const {indexedDBName,table,uuids} = data;
-    let loader = new ObjectLoader();
+onmessage = async function ({ data }) {
+  const { indexedDBName, table, uuids } = data
+  let loader = new ObjectLoader()
 
-    let environment = new Group();
+  let environment = new Group()
 
-    const db = new DBStorage(indexedDBName,table);
+  const db = new DBStorage(indexedDBName, table)
 
-    for (const uuid of uuids) {
-        const arr = await db.getItem(uuid);
+  for (const uuid of uuids) {
+    const arr = await db.getItem(uuid)
 
-        const visualGeometries = [];
-        arr.forEach((meshJson) => {
-            const m = new Matrix4();
-            const matrixWorld = m.fromArray(meshJson.matrixWorld);
+    const visualGeometries = []
+    arr.forEach((meshJson) => {
+      const m = new Matrix4()
+      const matrixWorld = m.fromArray(meshJson.matrixWorld)
 
-            meshJson.matrixWorld = undefined;
-            const mesh = loader.parse(meshJson);
+      meshJson.matrixWorld = undefined
+      const mesh = loader.parse(meshJson)
 
-            const cloneGeom = (me) => {
-                const geom = me.geometry.clone();
-                geom.applyMatrix4(me.matrixWorld);
-                visualGeometries.push(geom);
-            }
+      const cloneGeom = (me) => {
+        const geom = me.geometry.clone()
+        geom.applyMatrix4(me.matrixWorld)
+        visualGeometries.push(geom)
+      }
 
-            // @ts-ignore
-            if (!mesh.isInstancedMesh) {
-                cloneGeom(mesh);
-            } else {
-                const meshes = getMeshByInstancedMesh(mesh);
-                meshes.forEach((m) => {
-                    cloneGeom(m);
-                });
-            }
-        });
+      // @ts-ignore
+      if (!mesh.isInstancedMesh) {
+        cloneGeom(mesh)
+      } else {
+        const meshes = getMeshByInstancedMesh(mesh)
+        meshes.forEach((m) => {
+          cloneGeom(m)
+        })
+      }
+    })
 
-        if (visualGeometries.length) {
-            const newGeom = BufferGeometryUtils.mergeGeometries(visualGeometries);
-            let n_geo = newGeom.clone().toJSON();
+    if (visualGeometries.length) {
+      const newGeom = BufferGeometryUtils.mergeGeometries(visualGeometries)
+      let n_geo = newGeom.clone().toJSON()
 
-            const newMesh = new Mesh(newGeom, basicMaterial);
-            environment.add(newMesh);
+      const newMesh = new Mesh(newGeom, basicMaterial)
+      environment.add(newMesh)
 
-            postMessage({
-                type: "env",
-                materialUuid:uuid,
-                geometryJson: n_geo
-            })
+      postMessage({
+        type: 'env',
+        materialUuid: uuid,
+        geometryJson: n_geo,
+      })
 
-            n_geo = undefined;
-        }
-
-        await db.removeItem(uuid);
+      n_geo = undefined
     }
 
-    const staticGenerator = new StaticGeometryGenerator(environment);
-    staticGenerator.attributes = ['position'];
+    await db.removeItem(uuid)
+  }
 
-    const mergedGeometry = staticGenerator.generate();
+  const staticGenerator = new StaticGeometryGenerator(environment)
+  staticGenerator.attributes = ['position']
 
-    const gArray = {
-        ...parseAttr(mergedGeometry.attributes),
-        index: {
-            array:mergedGeometry.index.array,
-            itemSize:mergedGeometry.index.itemSize
-        }
-    }
-    mergedGeometry.index.array = new TYPED_ARRAYS[gArray.index.array.constructor.name]([]);
+  const mergedGeometry = staticGenerator.generate()
 
-    const mergedGeometryJson = mergedGeometry.toJSON();
+  const gArray = {
+    ...parseAttr(mergedGeometry.attributes),
+    index: {
+      array: mergedGeometry.index.array,
+      itemSize: mergedGeometry.index.itemSize,
+    },
+  }
+  mergedGeometry.index.array = new TYPED_ARRAYS[
+    gArray.index.array.constructor.name
+  ]([])
 
-    const transfer = Object.values(gArray).map(arrayBuffer => arrayBuffer.array.buffer);
-    postMessage({
-        type: "collider",
-        mergedGeometryJson: mergedGeometryJson,
-        gArray: gArray
-    }, transfer);
+  const mergedGeometryJson = mergedGeometry.toJSON()
 
-    basicMaterial = undefined;
-    environment = undefined;
+  const transfer = Object.values(gArray).map(
+    (arrayBuffer) => arrayBuffer.array.buffer
+  )
+  postMessage(
+    {
+      type: 'collider',
+      mergedGeometryJson: mergedGeometryJson,
+      gArray: gArray,
+    },
+    transfer
+  )
+
+  basicMaterial = undefined
+  environment = undefined
 }

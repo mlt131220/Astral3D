@@ -1,6 +1,6 @@
 import { Command } from './Command';
 import { ObjectLoader } from '../loader/ObjectLoader';
-import {useDispatchSignal} from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -14,7 +14,7 @@ class SetMaterialCommand extends Command {
 	private oldMaterial;
 	private newMaterial;
 
-	constructor(object, newMaterial, materialSlot? ) {
+	constructor(object, newMaterial, materialSlot?) {
 		super();
 
 		this.type = 'SetMaterialCommand';
@@ -23,18 +23,18 @@ class SetMaterialCommand extends Command {
 		this.object = object;
 		this.materialSlot = materialSlot;
 
-		this.oldMaterial = App.getObjectMaterial( object, materialSlot );
+		this.oldMaterial = App.getObjectMaterial(object, materialSlot);
 		this.newMaterial = newMaterial;
 	}
 
 	execute() {
-		App.setObjectMaterial( this.object, this.materialSlot, this.newMaterial );
-		useDispatchSignal("materialChanged",this.newMaterial);
+		App.setObjectMaterial(this.object, this.materialSlot, this.newMaterial);
+		useDispatchSignal("materialChanged", this.newMaterial);
 	}
 
 	undo() {
-		App.setObjectMaterial( this.object, this.materialSlot, this.oldMaterial );
-		useDispatchSignal("materialChanged",this.oldMaterial);
+		App.setObjectMaterial(this.object, this.materialSlot, this.oldMaterial);
+		useDispatchSignal("materialChanged", this.oldMaterial);
 	}
 
 	toJSON() {
@@ -45,20 +45,20 @@ class SetMaterialCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
-		this.object = App.getObjectByUuid( json.objectUuid );
-		this.oldMaterial = parseMaterial( json.oldMaterial );
-		this.newMaterial = parseMaterial( json.newMaterial );
+		this.object = App.getObjectByUuid(json.objectUuid);
+		this.oldMaterial = parseMaterial(json.oldMaterial);
+		this.newMaterial = parseMaterial(json.newMaterial);
 
-		function parseMaterial( json ) {
+		function parseMaterial(json) {
 			const loader = new ObjectLoader();
 			//@ts-ignore
-			const images = loader.parseImages( json.images );
-			const textures = loader.parseTextures( json.textures, images );
-			const materials = loader.parseMaterials( [ json ], textures );
-			return materials[ json.uuid ];
+			const images = loader.parseImages(json.images);
+			const textures = loader.parseTextures(json.textures, images);
+			const materials = loader.parseMaterials([json], textures);
+			return materials[json.uuid];
 		}
 	}
 }

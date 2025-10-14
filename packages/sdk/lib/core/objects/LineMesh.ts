@@ -4,13 +4,13 @@
  * @date   2024/5/21 22:08
  * @description 带线框子模型的Mesh对象
  */
-import {Mesh, Material, BufferGeometry, MeshBasicMaterial, LineSegments, LineBasicMaterial, EdgesGeometry} from 'three';
-import {useDispatchSignal} from "@/hooks";
+import { Mesh, Material, BufferGeometry, MeshBasicMaterial, LineSegments, LineBasicMaterial, EdgesGeometry } from 'three';
+import { useDispatchSignal } from "#/hooks";
 
 export function materialProxy(lineMesh: LineMesh) {
     return new Proxy(lineMesh, {
         set(target: LineMesh, p: string, newValue: any): boolean {
-            if(p === 'material'){
+            if (p === 'material') {
                 (<LineBasicMaterial>(<LineSegments>target.children[0]).material).dispose();
                 target.children = [];
 

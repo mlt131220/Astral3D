@@ -1,23 +1,23 @@
 import * as THREE from 'three';
 import { CSM as _CSM } from 'three/examples/jsm/csm/CSM.js';
-import { useDispatchSignal } from '@/hooks';
-import App from "@/core/app/App";
+import { useDispatchSignal } from '#/hooks';
+import App from "#/core/app/App";
 
 // Cascaded Shadow Maps（级联阴影映射，CSM）
 class CSM {
-    instance:_CSM | null = null;
+    instance: _CSM | null = null;
 
-    constructor(options:IAppProject.CSM){
+    constructor(options: IAppProject.CSM) {
         this.enabled = options.enabled;
     }
 
-    get enabled(){
+    get enabled() {
         return !!this.instance;
     }
 
-    set enabled(isEnabled:boolean){
-        if (!isEnabled){
-            if(!this.instance) return;
+    set enabled(isEnabled: boolean) {
+        if (!isEnabled) {
+            if (!this.instance) return;
 
             // 移除csm创建的对象
             this.instance.remove();
@@ -31,7 +31,7 @@ class CSM {
         }
 
         /* 以下是启用csm的逻辑 */
-        if(this.instance){
+        if (this.instance) {
             this.reset();
             return;
         }
@@ -81,14 +81,14 @@ class CSM {
     }
 
     // 材质添加到csm
-    setupMaterial(material:THREE.Material){
-        if(!this.instance) return;
+    setupMaterial(material: THREE.Material) {
+        if (!this.instance) return;
 
         material.shadowSide = THREE.BackSide;
         this.instance.setupMaterial(material);
     }
 
-    updateProperty(key,value){
+    updateProperty(key, value) {
         if (!this.instance) return;
 
         this.instance[key] = value;
@@ -98,7 +98,7 @@ class CSM {
         useDispatchSignal("sceneGraphChanged");
     }
 
-    updateLightColor(color: string){
+    updateLightColor(color: string) {
         if (!this.instance) return;
 
         this.instance.lights.forEach(light => {
@@ -108,7 +108,7 @@ class CSM {
         useDispatchSignal("sceneGraphChanged");
     }
 
-    updateLightIntensity(intensity: number){
+    updateLightIntensity(intensity: number) {
         if (!this.instance) return;
 
         this.instance.lightIntensity = intensity;
@@ -120,7 +120,7 @@ class CSM {
         useDispatchSignal("sceneGraphChanged");
     }
 
-    updateLightDirection(direction: "x" | "y" | "z", value: number){
+    updateLightDirection(direction: "x" | "y" | "z", value: number) {
         if (!this.instance) return;
 
         this.instance.lightDirection[direction] = value;
@@ -128,7 +128,7 @@ class CSM {
         useDispatchSignal("sceneGraphChanged");
     }
 
-    updateFrustums(){
+    updateFrustums() {
         if (!this.instance) return;
 
         this.instance.updateFrustums();
@@ -136,7 +136,7 @@ class CSM {
         useDispatchSignal("sceneGraphChanged");
     }
 
-    update(){
+    update() {
         if (!this.instance) return;
 
         App.viewportCamera.updateMatrixWorld();
@@ -144,4 +144,4 @@ class CSM {
     }
 }
 
-export {CSM}
+export { CSM }

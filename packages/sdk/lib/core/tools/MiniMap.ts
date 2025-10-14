@@ -1,10 +1,10 @@
-import {MathUtils, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer,Object3D} from "three";
-import Viewer from "@/core/viewer/Viewer";
+import { MathUtils, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer, Object3D } from "three";
+import Viewer from "#/core/viewer/Viewer";
 
 interface IMiniMapOptions {
     mapSize: number,  // 决定了摄像机看到的内容大小, mapSize * mapSize 大小内容
     mapRenderSize: number,  // 决定了小地图2D平面的大小
-    followTarget:Object3D, // 小地图画面主要跟随对象
+    followTarget: Object3D, // 小地图画面主要跟随对象
     isShow: boolean // 是否显示小地图
 }
 
@@ -21,7 +21,7 @@ class MiniMap {
 
     isShow: boolean = false;
 
-    constructor(viewer:Viewer, options:IMiniMapOptions) {
+    constructor(viewer: Viewer, options: IMiniMapOptions) {
         this.scene = viewer.scene;
         this.sceneHelpers = viewer.sceneHelpers;
         this.mapRenderSize = options.mapRenderSize;
@@ -53,7 +53,7 @@ class MiniMap {
 
     createDomElement() {
         // 初始化小地图渲染器
-        const mapRenderer = new WebGLRenderer({alpha: true});
+        const mapRenderer = new WebGLRenderer({ alpha: true });
         mapRenderer.setSize(this.mapRenderSize, this.mapRenderSize);
         // mapRenderer.setClearColor(0x7d684f);
         mapRenderer.shadowMap.enabled = false;
@@ -85,12 +85,12 @@ class MiniMap {
         return pDiv;
     }
 
-    open(){
+    open() {
         this.dom.style.display = "block";
         this.isShow = true;
     }
 
-    close(){
+    close() {
         this.dom.style.display = "none";
         this.isShow = false;
     }
@@ -127,4 +127,4 @@ class MiniMap {
     }
 }
 
-export {MiniMap}
+export { MiniMap }

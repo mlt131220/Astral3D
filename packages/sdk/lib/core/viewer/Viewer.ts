@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import CameraControls from 'camera-controls';
-import {Timer} from 'three/examples/jsm/misc/Timer.js';
-import {CSS2DRenderer} from "three/examples/jsm/renderers/CSS2DRenderer";
-import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer.js";
-import {TransformControls} from "three/examples/jsm/controls/TransformControls.js";
+import { Timer } from 'three/examples/jsm/misc/Timer.js';
+import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
+import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
+import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import App from "../app/App";
-import {ViewerOptions} from "./ViewerOptions";
-import {PluginManager} from "@/core/plugin/plugin";
+import { ViewerOptions } from "./ViewerOptions";
+import { PluginManager } from "#/core/plugin/plugin";
 import {
     Helper,
     CameraManage,
@@ -17,20 +17,20 @@ import {
     Drag,
     TilesManage,
 } from "./modules";
-import {ShaderMaterialManager} from "@/core/shaderMaterial/ShaderMaterialManager";
-import {deepAssign, getMousePosition, isEmptyObject, isNil,createDivContainer} from "@/utils";
-import {useDispatchSignal} from "@/hooks";
+import { ShaderMaterialManager } from "#/core/shaderMaterial/ShaderMaterialManager";
+import { deepAssign, getMousePosition, isEmptyObject, isNil, createDivContainer } from "#/utils";
+import { useDispatchSignal } from "#/hooks";
 import {
     AddObjectCommand,
     RemoveObjectCommand,
     SetPositionCommand,
     SetRotationCommand,
     SetScaleCommand
-} from "@/core/commands/Commands";
-import {Emitter} from '@/core/libs/three-nebula';
-import ParticleEmitter from "@/core/objects/ParticleEmitter.ts";
-import {ViewerPathTracer} from "@/core/viewer/ViewerPathTracer.ts";
-import {Helper as ScriptHelper} from "../script";
+} from "#/core/commands/Commands";
+import { Emitter } from '#/core/libs/three-nebula';
+import ParticleEmitter from "#/core/objects/ParticleEmitter.ts";
+import { ViewerPathTracer } from "#/core/viewer/ViewerPathTracer.ts";
+import { Helper as ScriptHelper } from "../script";
 import Tiles from "../objects/Tile.ts";
 
 export interface ViewerEventMap {
@@ -107,7 +107,7 @@ export interface ViewerModules {
     shaderMaterialManager: ShaderMaterialManager,
     particleSystem: ParticleSystem,
     dragControl: Drag,
-    tilesManage:TilesManage,
+    tilesManage: TilesManage,
 }
 
 CameraControls.install({
@@ -489,7 +489,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
             // 拖拽
             dragControl: new Drag(this),
             // 3d tiles管理器
-            tilesManage: new TilesManage(this.scene,this.camera,this.renderer),
+            tilesManage: new TilesManage(this.scene, this.camera, this.renderer),
         }
 
         if (this.enableEdit) {
@@ -553,7 +553,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
     /**
      * 加载默认环境和背景
      */
-    loadEnv(setBg: boolean = true, onLoad?:(texture: THREE.Texture) => void,onError?:(error: Error) => void) {
+    loadEnv(setBg: boolean = true, onLoad?: (texture: THREE.Texture) => void, onError?: (error: Error) => void) {
         if (!this.options.hdr) return;
 
         App.resource.loadURLTexture(this.options.hdr, (texture: THREE.Texture) => {
@@ -649,11 +649,11 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
                     }
 
                     const boundFn = (e: any) => {
-                        const {type, target, ...params} = e;
+                        const { type, target, ...params } = e;
 
                         // 点击事件只分发给对应模型
                         if (["onPick", "onDoubleClick"].includes(name)) {
-                            const {intersect, object: _object} = params;
+                            const { intersect, object: _object } = params;
 
                             if (_object.uuid !== object.uuid) return;
 
@@ -696,11 +696,11 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
 
         if (!Fn.keydown) {
             Fn.keydown = (event: KeyboardEvent) => {
-                this.dispatchEvent({type: "onKeyDown", event})
+                this.dispatchEvent({ type: "onKeyDown", event })
             }
             window.addEventListener('keydown', Fn.keydown);
             Fn.keyup = (event: KeyboardEvent) => {
-                this.dispatchEvent({type: "onKeyUp", event})
+                this.dispatchEvent({ type: "onKeyUp", event })
             }
             window.addEventListener('keyup', Fn.keyup);
         }
@@ -867,7 +867,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
                     object = object.proxy;
                 }
 
-                this.dispatchEvent({type: "onPick", intersect: intersects[0], object});
+                this.dispatchEvent({ type: "onPick", intersect: intersects[0], object });
             }
 
             this.render();
@@ -879,7 +879,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
      * @param event
      */
     onPointerDown(event: PointerEvent) {
-        this.dispatchEvent({type: "onPointerDown", event});
+        this.dispatchEvent({ type: "onPointerDown", event });
 
         event.preventDefault();
         const array = getMousePosition(this.container, event.clientX, event.clientY);
@@ -893,7 +893,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
      * @param event
      */
     onPointerUp(event: PointerEvent) {
-        this.dispatchEvent({type: "onPointerUp", event});
+        this.dispatchEvent({ type: "onPointerUp", event });
 
         const array = getMousePosition(this.container, event.clientX, event.clientY);
         onUpPosition.fromArray(array);
@@ -907,7 +907,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
      * @param event
      */
     onPointerMove(event: PointerEvent) {
-        this.dispatchEvent({type: "onPointerMove", event});
+        this.dispatchEvent({ type: "onPointerMove", event });
     }
 
     /**
@@ -915,7 +915,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
      * @param event
      */
     onTouchStart(event: TouchEvent) {
-        this.dispatchEvent({type: "onTouchStart", event});
+        this.dispatchEvent({ type: "onTouchStart", event });
 
         const touch = event.changedTouches[0];
         const array = getMousePosition(this.container, touch.clientX, touch.clientY);
@@ -929,7 +929,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
      * @param event
      */
     onTouchEnd(event: TouchEvent) {
-        this.dispatchEvent({type: "onTouchEnd", event});
+        this.dispatchEvent({ type: "onTouchEnd", event });
 
         const touch = event.changedTouches[0];
         const array = getMousePosition(this.container, touch.clientX, touch.clientY);
@@ -955,7 +955,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
                 object = object.proxy;
             }
 
-            this.dispatchEvent({type: "onDoubleClick", intersect: intersects[0], object});
+            this.dispatchEvent({ type: "onDoubleClick", intersect: intersects[0], object });
         }
     }
 
@@ -971,7 +971,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
 
         if (timeStamp < App.singleFrameTime) return;
 
-        this.dispatchEvent({type: 'beforeAnimation', delta: timeStamp});
+        this.dispatchEvent({ type: 'beforeAnimation', delta: timeStamp });
 
         let needRender = App.animationManager.update(timeStamp);
         if (needRender) {
@@ -1013,11 +1013,12 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
         }
 
         // 3dTiles渲染
-        if(this.modules.tilesManage.update()){
+        if (this.modules.tilesManage.update()) {
             needRender = true;
         }
 
-        this.dispatchEvent({type: 'afterAnimation', delta: timeStamp, toBeRender: (_needRender:boolean = false) => {
+        this.dispatchEvent({
+            type: 'afterAnimation', delta: timeStamp, toBeRender: (_needRender: boolean = false) => {
                 needRender = _needRender;
             }
         });
@@ -1077,7 +1078,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
 
         const startTime = performance.now();
 
-        this.dispatchEvent({type: 'beforeRender', delta: <number>delta});
+        this.dispatchEvent({ type: 'beforeRender', delta: <number>delta });
 
         this.renderer.clearDepth();
 
@@ -1101,7 +1102,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
 
         this.modules.viewHelper.render();
 
-        this.dispatchEvent({type: 'afterRender', delta: <number>delta});
+        this.dispatchEvent({ type: 'afterRender', delta: <number>delta });
 
         const endTime = performance.now();
         // 计算帧时
@@ -1113,7 +1114,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
      * 销毁
      */
     dispose() {
-        this.dispatchEvent({type: "beforeDestroy"});
+        this.dispatchEvent({ type: "beforeDestroy" });
 
         this.container.removeEventListener('mousedown', Fn.mousedown);
         Fn.mousedown = null;
@@ -1130,7 +1131,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
             }
         })
 
-        this.dispatchEvent({type: "afterDestroy"});
+        this.dispatchEvent({ type: "afterDestroy" });
 
         this.unInstallScripts();
     }
@@ -1158,7 +1159,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
      * @param tiles 瓦片对象
      * @param addMode 添加进场景的方式：none-不添加；command-使用记录命令添加；normal-直接添加，不会记录历史
      */
-    addTiles(tiles:Tiles,addMode: "none" | "command" | "normal" = "command"){
+    addTiles(tiles: Tiles, addMode: "none" | "command" | "normal" = "command") {
         tiles.setCameraAndRenderer(this.camera, this.renderer);
 
         this.modules.tilesManage.addTiles(tiles);
@@ -1177,7 +1178,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
     /**
      * 移除瓦片
      */
-    removeTiles(tiles:Tiles){
+    removeTiles(tiles: Tiles) {
         this.modules.tilesManage.removeTiles(tiles);
 
         App.execute(new RemoveObjectCommand(tiles));

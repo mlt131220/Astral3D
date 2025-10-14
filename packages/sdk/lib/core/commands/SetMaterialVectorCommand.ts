@@ -1,5 +1,5 @@
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 class SetMaterialVectorCommand extends Command {
@@ -17,7 +17,7 @@ class SetMaterialVectorCommand extends Command {
 		this.updatable = true;
 
 		this.object = object;
-		this.material = App.getObjectMaterial( object, materialSlot );
+		this.material = App.getObjectMaterial(object, materialSlot);
 
 		this.attributeName = attributeName;
 
@@ -31,15 +31,15 @@ class SetMaterialVectorCommand extends Command {
 
 	execute() {
 		this.attribute.fromArray(this.newValue);
-		useDispatchSignal("materialChanged",this.material)
+		useDispatchSignal("materialChanged", this.material)
 	}
 
 	undo() {
 		this.attribute.fromArray(this.oldValue);
-		useDispatchSignal("materialChanged",this.material)
+		useDispatchSignal("materialChanged", this.material)
 	}
 
-	update( cmd ) {
+	update(cmd) {
 		this.newValue = cmd.newValue;
 	}
 
@@ -54,10 +54,10 @@ class SetMaterialVectorCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
-		this.object = App.getObjectByUuid( json.objectUuid );
+		this.object = App.getObjectByUuid(json.objectUuid);
 		this.attributeName = json.attributeName;
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;

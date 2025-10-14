@@ -1,6 +1,6 @@
 import { Object3D } from 'three';
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -17,7 +17,7 @@ class SetScriptValueCommand extends Command {
 	private oldValue: any;
 	private newValue: string;
 
-	constructor(object:Object3D, script:IScript.IStruct, attributeName:string, newValue:string) {
+	constructor(object: Object3D, script: IScript.IStruct, attributeName: string, newValue: string) {
 		super();
 
 		this.type = 'SetScriptValueCommand';
@@ -28,20 +28,20 @@ class SetScriptValueCommand extends Command {
 		this.script = script;
 
 		this.attributeName = attributeName;
-		this.oldValue = ( script !== undefined ) ? script[ this.attributeName ] : undefined;
+		this.oldValue = (script !== undefined) ? script[this.attributeName] : undefined;
 		this.newValue = newValue;
 	}
 
 	execute() {
 		this.script[this.attributeName] = this.newValue;
 
-		useDispatchSignal("scriptChanged",this.attributeName,this.object,this.script);
+		useDispatchSignal("scriptChanged", this.attributeName, this.object, this.script);
 	}
 
 	undo() {
 		this.script[this.attributeName] = this.oldValue;
 
-		useDispatchSignal("scriptChanged",this.attributeName,this.object,this.script);
+		useDispatchSignal("scriptChanged", this.attributeName, this.object, this.script);
 	}
 
 	update(cmd) {

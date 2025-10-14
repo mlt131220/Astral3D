@@ -3,7 +3,7 @@
  * 默认展示全部面板
  */
 import ThreeStats from 'three/examples/jsm/libs/stats.module.js';
-import Viewer from "@/core/viewer/Viewer.ts";
+import Viewer from "#/core/viewer/Viewer.ts";
 
 export class Stats {
     private viewer: Viewer;
@@ -11,13 +11,13 @@ export class Stats {
     private panel = 0;
     private _visible = true;
 
-    private fns:{
-        beforeRender:null | (() => void);
-        afterRender:null | (() => void);
+    private fns: {
+        beforeRender: null | (() => void);
+        afterRender: null | (() => void);
     } = {
-        beforeRender: null,
-        afterRender: null,
-    }
+            beforeRender: null,
+            afterRender: null,
+        }
 
     constructor(viewer: Viewer) {
         this.viewer = viewer;
@@ -28,37 +28,37 @@ export class Stats {
         this.init();
     }
 
-    get domElement():HTMLElement {
+    get domElement(): HTMLElement {
         return this.threeStats.dom;
     }
 
-    get visible(){
+    get visible() {
         return this._visible;
     }
 
-    set visible(visible:boolean) {
+    set visible(visible: boolean) {
         this._visible = visible;
 
         this.domElement.style.display = visible ? "block" : 'none';
     }
 
-    initEvent(){
+    initEvent() {
         this.fns.beforeRender = () => {
-            if(!this.visible) return;
+            if (!this.visible) return;
 
             this.threeStats.begin();
         };
-        this.viewer.addEventListener("beforeRender",this.fns.beforeRender);
+        this.viewer.addEventListener("beforeRender", this.fns.beforeRender);
 
         this.fns.afterRender = () => {
-            if(!this.visible) return;
+            if (!this.visible) return;
 
             this.threeStats.end();
         };
-        this.viewer.addEventListener("afterRender",this.fns.afterRender);
+        this.viewer.addEventListener("afterRender", this.fns.afterRender);
     }
 
-    init(){
+    init() {
         const canvases = this.domElement.querySelectorAll("canvas");
         canvases.forEach(canvas => {
             canvas.style.width = "5rem";
@@ -90,25 +90,25 @@ export class Stats {
         }
     }
 
-    showAllPanels(show:boolean) {
+    showAllPanels(show: boolean) {
         const canvases = this.domElement.querySelectorAll("canvas");
         canvases.forEach(canvas => {
             canvas.style.display = show ? "block" : "none";
         });
 
-        if(!show){
+        if (!show) {
             this.showPanel(this.panel);
         }
     }
 
-    dispose(){
-        if(this.fns.beforeRender){
-            this.viewer.removeEventListener("beforeRender",this.fns.beforeRender);
+    dispose() {
+        if (this.fns.beforeRender) {
+            this.viewer.removeEventListener("beforeRender", this.fns.beforeRender);
             this.fns.beforeRender = null;
         }
 
-        if(this.fns.afterRender){
-            this.viewer.removeEventListener("afterRender",this.fns.afterRender);
+        if (this.fns.afterRender) {
+            this.viewer.removeEventListener("afterRender", this.fns.afterRender);
             this.fns.afterRender = null;
         }
 

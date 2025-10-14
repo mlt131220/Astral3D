@@ -1,5 +1,5 @@
 import { Command } from './Command';
-import { useDispatchSignal } from "@/hooks";
+import { useDispatchSignal } from "#/hooks";
 import App from "../app/App";
 
 /**
@@ -24,23 +24,23 @@ class SetValueCommand extends Command {
 
 		this.object = object;
 		this.attributeName = attributeName;
-		this.oldValue = ( object !== undefined ) ? object[ attributeName ] : undefined;
+		this.oldValue = (object !== undefined) ? object[attributeName] : undefined;
 		this.newValue = newValue;
 	}
 
 	execute() {
-		this.object[ this.attributeName ] = this.newValue;
-		useDispatchSignal("objectChanged",this.object);
+		this.object[this.attributeName] = this.newValue;
+		useDispatchSignal("objectChanged", this.object);
 		useDispatchSignal("sceneGraphChanged");
 	}
 
 	undo() {
-		this.object[ this.attributeName ] = this.oldValue;
-		useDispatchSignal("objectChanged",this.object);
+		this.object[this.attributeName] = this.oldValue;
+		useDispatchSignal("objectChanged", this.object);
 		useDispatchSignal("sceneGraphChanged");
 	}
 
-	update( cmd ) {
+	update(cmd) {
 		this.newValue = cmd.newValue;
 	}
 
@@ -55,13 +55,13 @@ class SetValueCommand extends Command {
 		return output;
 	}
 
-	fromJSON( json ) {
-		super.fromJSON( json );
+	fromJSON(json) {
+		super.fromJSON(json);
 
 		this.attributeName = json.attributeName;
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;
-		this.object = App.getObjectByUuid( json.objectUuid );
+		this.object = App.getObjectByUuid(json.objectUuid);
 	}
 }
 

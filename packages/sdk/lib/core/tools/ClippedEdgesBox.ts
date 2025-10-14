@@ -14,10 +14,10 @@ import {
     BufferGeometry,
     Object3D
 } from "three";
-import {useAddSignal, useDispatchSignal, useRemoveSignal} from "@/hooks";
-import {isGroup} from "@/utils";
-import Viewer from "@/core/viewer/Viewer";
-import App from "@/core/app/App";
+import { useAddSignal, useDispatchSignal, useRemoveSignal } from "#/hooks";
+import { isGroup } from "#/utils";
+import Viewer from "#/core/viewer/Viewer";
+import App from "#/core/app/App";
 
 let objectSelectedFn;
 
@@ -35,9 +35,9 @@ class ClippedEdgesBox {
 
     public isOpen: boolean = false;
     protected sectionBox?: Box3;
-    protected lastSelected:Object3D | undefined = undefined;
+    protected lastSelected: Object3D | undefined = undefined;
 
-    constructor(viewer:Viewer) {
+    constructor(viewer: Viewer) {
         this.viewer = viewer;
         this.controls = viewer.modules.controls;
 
@@ -47,7 +47,7 @@ class ClippedEdgesBox {
         objectSelectedFn = this.objectSelected.bind(this);
     }
 
-    get domElement(){
+    get domElement() {
         return this.viewer.renderer.domElement;
     }
 
@@ -69,8 +69,8 @@ class ClippedEdgesBox {
     /**
      * 切换选中模型
      */
-    objectSelected(){
-        if(!this.isOpen) return;
+    objectSelected() {
+        if (!this.isOpen) return;
 
         this.reset();
     }
@@ -110,7 +110,7 @@ class ClippedEdgesBox {
     }
 
     dispose() {
-        if(this.isOpen){
+        if (this.isOpen) {
             this.close();
         }
 
@@ -482,8 +482,8 @@ class ClippedEdgesBox {
  * 剖切盒的BoxLine
  */
 class BoxLine extends LineSegments {
-    private normalMaterial = new LineBasicMaterial({color: 0x2ee3dc}); // 0x2ee3dc，线的正常颜色(原颜色:0xe1f2fb)
-    private activeMaterial = new LineBasicMaterial({color: 0x00fdec}); // 0x00fdec，线的激活颜色(原始颜色:0x00ffff)
+    private normalMaterial = new LineBasicMaterial({ color: 0x2ee3dc }); // 0x2ee3dc，线的正常颜色(原颜色:0xe1f2fb)
+    private activeMaterial = new LineBasicMaterial({ color: 0x00fdec }); // 0x00fdec，线的激活颜色(原始颜色:0x00ffff)
 
     /**
      * @param vertices 一条直线上的两点
@@ -533,8 +533,8 @@ class BoxFace extends Mesh {
         this.geometry.setFromPoints(vertices);
         this.geometry.setIndex([0, 3, 2, 0, 2, 1]);
         this.geometry.computeVertexNormals();
-        this.material = new MeshBasicMaterial({colorWrite: false, depthWrite: false});
-        const backMaterial = new MeshBasicMaterial({color: 0x2ee3dc, transparent: true, opacity: 0.3, side: BackSide});
+        this.material = new MeshBasicMaterial({ colorWrite: false, depthWrite: false });
+        const backMaterial = new MeshBasicMaterial({ color: 0x2ee3dc, transparent: true, opacity: 0.3, side: BackSide });
         this.backFace = new Mesh(this.geometry, backMaterial);
     }
 
@@ -556,4 +556,4 @@ class BoxFace extends Mesh {
     }
 }
 
-export {ClippedEdgesBox};
+export { ClippedEdgesBox };

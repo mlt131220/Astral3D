@@ -5,12 +5,12 @@
  * @description 天气系统
  */
 import * as THREE from "three";
-import {useAddSignal, useRemoveSignal} from "@/hooks";
-import Rain from "@/core/objects/weather/Rain";
-import Snow from "@/core/objects/weather/Snow";
-import {SnowingShaderMaterial} from "@/core/shaderMaterial/modules/SnowingShaderMaterial";
+import { useAddSignal, useRemoveSignal } from "#/hooks";
+import Rain from "#/core/objects/weather/Rain";
+import Snow from "#/core/objects/weather/Snow";
+import { SnowingShaderMaterial } from "#/core/shaderMaterial/modules/SnowingShaderMaterial";
 import Viewer from "../Viewer";
-import App from "@/core/app/App";
+import App from "#/core/app/App";
 
 let _fogConfigChangeFn: any = null;
 let _rainConfigChangeFn: any = null;
@@ -40,7 +40,7 @@ export class Weather {
     }
 
     objectAdded(object) {
-        const {enabled, accumulation} = App.project.getKey("weather.snow");
+        const { enabled, accumulation } = App.project.getKey("weather.snow");
 
         if (enabled && accumulation) {
             object.traverseByCondition((obj) => {
@@ -88,7 +88,7 @@ export class Weather {
      * 场景雨效设置项变更
      */
     sceneRainSettingsChanged() {
-        const {enabled, speed, color, size, radian, alpha} = App.project.getKey("weather.rain");
+        const { enabled, speed, color, size, radian, alpha } = App.project.getKey("weather.rain");
 
         if (enabled) {
             if (this.rain) {
@@ -202,7 +202,7 @@ export class Weather {
      * 场景雪效设置项变更
      */
     sceneSnowSettingsChanged() {
-        const {enabled, speed, size, density, alpha, accumulation} = App.project.getKey("weather.snow");
+        const { enabled, speed, size, density, alpha, accumulation } = App.project.getKey("weather.snow");
 
         if (enabled) {
             if (this.snow) {
@@ -213,9 +213,9 @@ export class Weather {
                     alpha
                 })
 
-                if(accumulation && this.snowingMaterialObj.length === 0){
+                if (accumulation && this.snowingMaterialObj.length === 0) {
                     this.initSnowMap()
-                }else if(!accumulation && this.snowingMaterialObj.length > 0){
+                } else if (!accumulation && this.snowingMaterialObj.length > 0) {
                     this.removeSnowMap();
                 }
             } else {

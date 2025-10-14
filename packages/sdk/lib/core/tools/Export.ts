@@ -1,5 +1,5 @@
-import {saveArrayBuffer, saveString, getAnimations, getAnimationClips} from '@/utils';
-import App from "@/core/app/App";
+import { saveArrayBuffer, saveString, getAnimations, getAnimationClips } from '#/utils';
+import App from "#/core/app/App";
 
 class Export {
     constructor() {
@@ -8,10 +8,10 @@ class Export {
     /*********************************导出物体*******************************************/
     //导出为JSON
     exportObjectToJSON() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const json = App.selected.toJSON();
-        let output:string;
+        let output: string;
         try {
             output = JSON.stringify(json, null, '\t');
             output = output.replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
@@ -24,7 +24,7 @@ class Export {
 
     // 导出为glb
     async exportObjectToGlb() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const animations = getAnimationClips(App.selected);
 
@@ -46,7 +46,7 @@ class Export {
 
     //导出为gltf
     async exportObjectToGltf() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const animations = getAnimations();
 
@@ -65,7 +65,7 @@ class Export {
 
     //导出为obj
     async exportObjectToObj() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const { OBJExporter } = await import('three/examples/jsm/exporters/OBJExporter.js');
 
@@ -76,7 +76,7 @@ class Export {
 
     //导出为ply
     async exportObjectToPly() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const { PLYExporter } = await import('three/examples/jsm/exporters/PLYExporter.js');
 
@@ -93,7 +93,7 @@ class Export {
 
     // 导出为ply二进制
     async exportObjectToPlyBinary() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const { PLYExporter } = await import('three/examples/jsm/exporters/PLYExporter.js');
 
@@ -110,7 +110,7 @@ class Export {
 
     //导出为STL
     async exportObjectToStl() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const { STLExporter } = await import('three/examples/jsm/exporters/STLExporter.js');
 
@@ -121,7 +121,7 @@ class Export {
 
     //导出为STL(二进制)
     async exportObjectToStlBinary() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const { STLExporter } = await import('three/examples/jsm/exporters/STLExporter.js');
 
@@ -132,7 +132,7 @@ class Export {
 
     //导出为USDZ
     async exportObjectToUSDZ() {
-        if(!App.selected) return;
+        if (!App.selected) return;
 
         const { USDZExporter } = await import('three/examples/jsm/exporters/USDZExporter.js');
 
@@ -144,7 +144,7 @@ class Export {
     //导出为JSON
     exportSceneToJSON() {
         const json = App.getSceneWithoutIgnore().toJSON();
-        let output:string;
+        let output: string;
         try {
             output = JSON.stringify(json, null, '\t');
             output = output.replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
@@ -156,7 +156,7 @@ class Export {
     }
 
     // 导出为glb
-    async exportSceneToGlb(){
+    async exportSceneToGlb() {
         const animations = getAnimationClips();
 
         const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
@@ -178,7 +178,7 @@ class Export {
     async exportSceneToGltf() {
         const animations = getAnimations();
 
-        const {GLTFExporter} = await import('three/examples/jsm/exporters/GLTFExporter.js');
+        const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
         const exporter = new GLTFExporter();
 
         exporter.parse(
@@ -186,8 +186,8 @@ class Export {
             function (result) {
                 saveString(JSON.stringify(result, null, 2), 'Astral3DScene.gltf');
             },
-            () => {},
-            {animations: animations}
+            () => { },
+            { animations: animations }
         );
     }
 
@@ -202,7 +202,7 @@ class Export {
 
     //导出为ply
     async exportSceneToPly() {
-        const {PLYExporter} = await import('three/examples/jsm/exporters/PLYExporter.js');
+        const { PLYExporter } = await import('three/examples/jsm/exporters/PLYExporter.js');
 
         const exporter = new PLYExporter();
 
@@ -217,7 +217,7 @@ class Export {
 
     // 导出为ply二进制
     async exportSceneToPlyBinary() {
-        const {PLYExporter} = await import('three/examples/jsm/exporters/PLYExporter.js');
+        const { PLYExporter } = await import('three/examples/jsm/exporters/PLYExporter.js');
 
         const exporter = new PLYExporter();
 
@@ -226,13 +226,13 @@ class Export {
             function (result) {
                 saveArrayBuffer(result, 'Astral3DScene-binary.ply');
             },
-            {binary: true}
+            { binary: true }
         );
     }
 
     //导出为STL
     async exportSceneToStl() {
-        const {STLExporter} = await import('three/examples/jsm/exporters/STLExporter.js');
+        const { STLExporter } = await import('three/examples/jsm/exporters/STLExporter.js');
 
         const exporter = new STLExporter();
 
@@ -241,7 +241,7 @@ class Export {
 
     //导出为STL(二进制)
     async exportSceneToStlBinary() {
-        const {STLExporter} = await import('three/examples/jsm/exporters/STLExporter.js');
+        const { STLExporter } = await import('three/examples/jsm/exporters/STLExporter.js');
 
         const exporter = new STLExporter();
 
@@ -250,11 +250,11 @@ class Export {
 
     //导出为USDZ
     async exportSceneToUSDZ() {
-        const {USDZExporter} = await import('three/examples/jsm/exporters/USDZExporter.js');
+        const { USDZExporter } = await import('three/examples/jsm/exporters/USDZExporter.js');
 
         const exporter = new USDZExporter();
         saveArrayBuffer(await exporter.parseAsync(App.getSceneWithoutIgnore(), {}), 'Astral3DScene.usdz');
     }
 }
 
-export {Export};
+export { Export };

@@ -5,8 +5,8 @@
  * @description 圆网格着色器材质
  * @from https://www.shadertoy.com/view/7dG3zy
  */
-import {DoubleSide, ShaderMaterial} from "three";
-import {useDispatchSignal} from "@/hooks";
+import { DoubleSide, ShaderMaterial } from "three";
+import { useDispatchSignal } from "#/hooks";
 
 const vertex = `
 varying vec2 vUv;
@@ -82,10 +82,10 @@ export class CircleGridShaderMaterial {
         return CircleGridShaderMaterial.InstanceShaderMaterial();
     }
 
-    static InstanceShaderMaterial(){
+    static InstanceShaderMaterial() {
         const material = new ShaderMaterial({
             uniforms: {
-                uTime: {value: 1.0},
+                uTime: { value: 1.0 },
             },
             vertexShader: vertex,
             fragmentShader: fragment,
@@ -99,13 +99,13 @@ export class CircleGridShaderMaterial {
     static Init() {
         CircleGridShaderMaterial._ShaderMaterial = CircleGridShaderMaterial.InstanceShaderMaterial();
 
-        useDispatchSignal("instantiateShaderMaterial",CircleGridShaderMaterial);
+        useDispatchSignal("instantiateShaderMaterial", CircleGridShaderMaterial);
 
         return CircleGridShaderMaterial._ShaderMaterial;
     }
 
     static Update() {
-        if(!CircleGridShaderMaterial._ShaderMaterial) return;
+        if (!CircleGridShaderMaterial._ShaderMaterial) return;
 
         CircleGridShaderMaterial._ShaderMaterial.uniforms.uTime.value += .01
     }

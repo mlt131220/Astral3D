@@ -4,7 +4,7 @@
  * @date   2025/2/24 下午2:21
  * @description 日志记录器
  */
-import {useAddSignal, useDispatchSignal,useRemoveSignal} from '@/hooks';
+import { useAddSignal, useDispatchSignal, useRemoveSignal } from '#/hooks';
 
 export interface ILog {
     id: number;
@@ -13,7 +13,7 @@ export interface ILog {
     level: string;
 }
 
-let _delLogFn,_clearLogFn,_historyChangedFn;
+let _delLogFn, _clearLogFn, _historyChangedFn;
 class Logger {
     static Enum = Object.freeze({
         TRACE: "trace",
@@ -31,15 +31,15 @@ class Logger {
 
     constructor() {
         _delLogFn = this.delLog.bind(this);
-        useAddSignal("deleteLog",_delLogFn);
+        useAddSignal("deleteLog", _delLogFn);
         _clearLogFn = this.clearLogs.bind(this);
-        useAddSignal("clearLogs",_clearLogFn);
+        useAddSignal("clearLogs", _clearLogFn);
         _historyChangedFn = this.historyChanged.bind(this);
-        useAddSignal("historyChanged",_historyChangedFn);
+        useAddSignal("historyChanged", _historyChangedFn);
     }
 
-    log(methodName:string,message:string){
-        if(!this.enabled) return;
+    log(methodName: string, message: string) {
+        if (!this.enabled) return;
 
         const _log = {
             id: this.logs.length,
@@ -53,18 +53,18 @@ class Logger {
         useDispatchSignal("addLog", _log, this.logs);
     }
 
-    trace(message:string) { this.log(Logger.Enum.TRACE, message); }
-    debug(message:string) { this.log(Logger.Enum.DEBUG, message); }
-    info(message:string) { this.log(Logger.Enum.INFO, message); }
-    warn(message:string) { this.log(Logger.Enum.WARN, message); }
-    error(message:string) { this.log(Logger.Enum.ERROR, message); }
+    trace(message: string) { this.log(Logger.Enum.TRACE, message); }
+    debug(message: string) { this.log(Logger.Enum.DEBUG, message); }
+    info(message: string) { this.log(Logger.Enum.INFO, message); }
+    warn(message: string) { this.log(Logger.Enum.WARN, message); }
+    error(message: string) { this.log(Logger.Enum.ERROR, message); }
 
     /**
      * 删除日志
      * @param _log
      */
     delLog(_log: ILog) {
-        this.logs = this.logs.filter(log => log.id!== _log.id);
+        this.logs = this.logs.filter(log => log.id !== _log.id);
     }
 
     /**
@@ -78,24 +78,24 @@ class Logger {
      * 历史记录变化回调
      * @param cmd
      */
-    historyChanged(cmd){
-        if(!cmd?.name) return;
+    historyChanged(cmd) {
+        if (!cmd?.name) return;
 
         let msg = cmd.name;
-        const postposition = ['AddObjectCommand','RemoveObjectCommand','MoveObjectCommand'];
-        if(postposition.includes(cmd.type)){
+        const postposition = ['AddObjectCommand', 'RemoveObjectCommand', 'MoveObjectCommand'];
+        if (postposition.includes(cmd.type)) {
             msg = `${msg}: ${cmd.object.name} `;
-        }else if(cmd.object){
+        } else if (cmd.object) {
             msg = `${cmd.object.name} ${msg.toLowerCase()}`;
         }
 
-        if(cmd.newValue !== undefined && cmd.oldValue !== undefined){
+        if (cmd.newValue !== undefined && cmd.oldValue !== undefined) {
             let newValue = cmd.newValue;
             let oldValue = cmd.oldValue;
-            if(typeof newValue === 'object'){
+            if (typeof newValue === 'object') {
                 newValue = JSON.stringify(newValue);
             }
-            if(typeof oldValue === 'object'){
+            if (typeof oldValue === 'object') {
                 oldValue = JSON.stringify(oldValue);
             }
 
@@ -106,11 +106,11 @@ class Logger {
     }
 
     dispose() {
-        useRemoveSignal("deleteLog",_delLogFn)
+        useRemoveSignal("deleteLog", _delLogFn)
         _delLogFn = null;
-        useRemoveSignal("clearLogs",_clearLogFn)
+        useRemoveSignal("clearLogs", _clearLogFn)
         _clearLogFn = null;
-        useRemoveSignal("historyChanged",_historyChangedFn)
+        useRemoveSignal("historyChanged", _historyChangedFn)
         _historyChangedFn = null;
     }
 }

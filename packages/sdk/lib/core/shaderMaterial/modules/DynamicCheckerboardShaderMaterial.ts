@@ -5,8 +5,8 @@
  * @description 动态棋盘着色器材质
  * @from  https://glslsandbox.com/e#109552.0
  */
-import {DoubleSide, ShaderMaterial} from "three";
-import {useDispatchSignal} from "@/hooks";
+import { DoubleSide, ShaderMaterial } from "three";
+import { useDispatchSignal } from "#/hooks";
 
 const vertex = `
 varying vec2 vUv;
@@ -67,7 +67,7 @@ export class DynamicCheckerboardShaderMaterial {
 
     static InstanceShaderMaterial() {
         const material = new ShaderMaterial({
-            uniforms:{
+            uniforms: {
                 uTime: {
                     value: 1.0
                 }
@@ -90,12 +90,12 @@ export class DynamicCheckerboardShaderMaterial {
     }
 
     static Update() {
-        if(!DynamicCheckerboardShaderMaterial._ShaderMaterial) return;
+        if (!DynamicCheckerboardShaderMaterial._ShaderMaterial) return;
 
         DynamicCheckerboardShaderMaterial._ShaderMaterial.uniforms.uTime.value += .01
     }
 
-    static UpdatePreview(previewMaterial : ShaderMaterial) {
+    static UpdatePreview(previewMaterial: ShaderMaterial) {
         previewMaterial.uniforms.uTime.value += .01
     }
 }

@@ -1,10 +1,10 @@
 import * as DrawShare from "./drawShare";
-import {useAddSignal, useDispatchSignal, useRemoveSignal} from "@/hooks";
+import { useAddSignal, useDispatchSignal, useRemoveSignal } from "#/hooks";
 import OffScreenCanvasWorker from './offScreenCanvas.worker.ts?worker&url';
-import App from "@/core/app/App.ts";
+import App from "#/core/app/App.ts";
 
 /** ----------------- 离屏渲染中的事件处理--------------------------- **/
-const mouseEventHandler = makeSendPropertiesHandler( [
+const mouseEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
     'metaKey',
     'shiftKey',
@@ -14,52 +14,52 @@ const mouseEventHandler = makeSendPropertiesHandler( [
     'clientY',
     'pageX',
     'pageY',
-] );
-const wheelEventHandlerImpl = makeSendPropertiesHandler( [
+]);
+const wheelEventHandlerImpl = makeSendPropertiesHandler([
     'deltaX',
     'deltaY',
-] );
-const keydownEventHandler = makeSendPropertiesHandler( [
+]);
+const keydownEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
     'metaKey',
     'shiftKey',
     'keyCode',
-] );
-function wheelEventHandler( event, sendFn ) {
+]);
+function wheelEventHandler(event, sendFn) {
     event.preventDefault();
-    wheelEventHandlerImpl( event, sendFn );
+    wheelEventHandlerImpl(event, sendFn);
 }
 
-function preventDefaultHandler( event ) {
+function preventDefaultHandler(event) {
     event.preventDefault();
 }
 
 function copyProperties(src, properties, dst) {
-    for ( const name of properties ) {
-        dst[ name ] = src[ name ];
+    for (const name of properties) {
+        dst[name] = src[name];
     }
 }
 
-function makeSendPropertiesHandler( properties ) {
+function makeSendPropertiesHandler(properties) {
     return function sendProperties(event, sendFn) {
         const data = { type: event.type };
-        copyProperties( event, properties, data );
-        sendFn( data );
+        copyProperties(event, properties, data);
+        sendFn(data);
     };
 }
 
 function touchEventHandler(event, sendFn) {
-    const touches: { pageX:number,pageY:number }[] = [];
+    const touches: { pageX: number, pageY: number }[] = [];
     const data = { type: event.type, touches };
-    for ( let i = 0; i < event.touches.length; ++ i ) {
-        const touch = event.touches[ i ];
+    for (let i = 0; i < event.touches.length; ++i) {
+        const touch = event.touches[i];
         touches.push({
             pageX: touch.pageX,
             pageY: touch.pageY,
         });
     }
 
-    sendFn( data );
+    sendFn(data);
 }
 
 // 四个方向键
@@ -73,7 +73,7 @@ function filteredKeydownEventHandler(event, sendFn) {
     const { keyCode } = event;
     if (orbitKeys[keyCode]) {
         event.preventDefault();
-        keydownEventHandler( event, sendFn );
+        keydownEventHandler(event, sendFn);
     }
 }
 /** ----------------- 离屏渲染中的事件end --------------------------- **/
@@ -86,7 +86,7 @@ class ElementProxy {
     readonly id: number;
     private worker: Worker;
     private element: HTMLElement;
-    
+
     constructor(element, worker, eventHandlers) {
         this.id = nextProxyId++;
         this.worker = worker;
@@ -95,7 +95,7 @@ class ElementProxy {
         // 注册一个响应元素id
         worker.postMessage({
             type: 'makeProxy',
-            data:{
+            data: {
                 id: this.id,
             }
         });
@@ -111,10 +111,10 @@ class ElementProxy {
         }
     }
 
-    sendEvent(data){
+    sendEvent(data) {
         this.worker.postMessage({
             type: 'event',
-            data:{
+            data: {
                 id: this.id,
                 data,
             }
@@ -143,10 +143,10 @@ let cadDialogMoveFn;
  * @constructor
  */
 class DxfViewer {
-    private worker:Worker | undefined;
+    private worker: Worker | undefined;
     private resizeObserver: ResizeObserver;
     private proxy: ElementProxy | undefined;
-    private middleObject:any = new Proxy({},{
+    private middleObject: any = new Proxy({}, {
         set(target, p: string | symbol, newValue: any): boolean {
             target[p] = newValue;
 
@@ -159,7 +159,7 @@ class DxfViewer {
         }
     })
 
-    constructor(data: any, canvas: HTMLCanvasElement, width: number, height: number, onComplete?:()=>void) {
+    constructor(data: any, canvas: HTMLCanvasElement, width: number, height: number, onComplete?: () => void) {
         //console.log('dxf data:', data);
         canvas.style.width = `${width}px`;
         canvas.style.height = `${height}px`;
@@ -170,7 +170,7 @@ class DxfViewer {
         if (canvas.transferControlToOffscreen) {
             // console.log('OffscreenCanvas supported');
             // 创建Worker进行离屏渲染
-            this.worker = new Worker(OffScreenCanvasWorker, {type: 'module'});
+            this.worker = new Worker(OffScreenCanvasWorker, { type: 'module' });
             const offscreen = canvas.transferControlToOffscreen();
             offscreen.width = width;
             offscreen.height = height;
@@ -196,13 +196,13 @@ class DxfViewer {
                 type: 'start', data: {
                     canvas: offscreen,
                     canvasId: this.proxy.id,
-                    data:data,
+                    data: data,
                     options: {
-                        bgColor:0x000000,
-                        contrastColor:0xffffff,
-                        fontUrl:cadFontUrl
+                        bgColor: 0x000000,
+                        contrastColor: 0xffffff,
+                        fontUrl: cadFontUrl
                     },
-                    middleObject:{
+                    middleObject: {
                         markList: JSON.stringify(App.project.getKey("drawing.markList")),
                         selectedRectIndex: App.project.getKey("drawing.selectedRectIndex"),
                     }
@@ -228,24 +228,24 @@ class DxfViewer {
             }
 
             cadDialogMoveFn = this.proxy.sendSize.bind(this.proxy);
-            useAddSignal("cadViewerResize",cadDialogMoveFn)
-        }else{
+            useAddSignal("cadViewerResize", cadDialogMoveFn)
+        } else {
             canvas.width = width;
             canvas.height = height;
 
             //不支持离屏渲染
             DrawShare.main({
                 canvas,
-                inputElement:canvas,
-                data:data,
-                onComplete:onComplete,
-                signal:this.handleSignal,
+                inputElement: canvas,
+                data: data,
+                onComplete: onComplete,
+                signal: this.handleSignal,
                 options: {
-                    bgColor:0x000000,
-                    contrastColor:0xffffff,
-                    fontUrl:cadFontUrl
+                    bgColor: 0x000000,
+                    contrastColor: 0xffffff,
+                    fontUrl: cadFontUrl
                 },
-                middleObject:this.middleObject
+                middleObject: this.middleObject
             });
         }
 
@@ -255,18 +255,18 @@ class DxfViewer {
             canvas.style.height = `${entries[0].contentRect.height}px`;
 
             const data = {
-                width:entries[0].contentRect.width,
-                height:entries[0].contentRect.height
+                width: entries[0].contentRect.width,
+                height: entries[0].contentRect.height
             }
 
-            if(this.worker){
+            if (this.worker) {
                 this.worker.postMessage({
-                    type:"resize",
+                    type: "resize",
                     data
                 })
 
                 this.proxy?.sendSize();
-            }else{
+            } else {
                 DrawShare.resize(data)
             }
         });
@@ -274,32 +274,32 @@ class DxfViewer {
     }
 
     // 触发signal
-    handleSignal(args){
-        const {type,name,data} = args;
+    handleSignal(args) {
+        const { type, name, data } = args;
         switch (type) {
             case "dispatch":
-                useDispatchSignal(name,...data)
+                useDispatchSignal(name, ...data)
                 break;
         }
     }
 
     // 调用drawShare中的方法,data为传入的参数，对象展示
-    callMethod(methodName:string, data:any = {}){
-        if(this.worker){
+    callMethod(methodName: string, data: any = {}) {
+        if (this.worker) {
             this.worker.postMessage({
-                type:methodName,
+                type: methodName,
                 data,
             })
-        }else{
+        } else {
             DrawShare[methodName](data);
         }
     }
 
     dispose() {
-        if(this.worker){
+        if (this.worker) {
             this.worker.terminate();
-            useRemoveSignal("cadViewerResize",cadDialogMoveFn)
-        }else{
+            useRemoveSignal("cadViewerResize", cadDialogMoveFn)
+        } else {
             DrawShare.dispose();
         }
 
@@ -308,27 +308,27 @@ class DxfViewer {
 
     /* ------------------- 需要共同实现的标记相关方法 ------------------------- */
     // 获取选中的标记
-    get selectRectIndex(){
+    get selectRectIndex() {
         return this.middleObject.selectRectIndex;
     }
 
     // 删除选中的标记
-    deleteRect(){
+    deleteRect() {
         const id = this.middleObject.selectRect?.id;
-        if(!id) return;
+        if (!id) return;
 
         const elementId = this.middleObject.selectRect?.elementId;
-        this.callMethod('callModuleMethod',{
-            moduleName: "drawRect", methodName: "deleteRect",elementId:elementId
+        this.callMethod('callModuleMethod', {
+            moduleName: "drawRect", methodName: "deleteRect", elementId: elementId
         })
     }
 
     // 根据模型选中对应标记
-    selectRect(uuid:string){
-        this.callMethod('callModuleMethod',{
-            moduleName: "drawRect", methodName: "setSelect",elementId:uuid
+    selectRect(uuid: string) {
+        this.callMethod('callModuleMethod', {
+            moduleName: "drawRect", methodName: "setSelect", elementId: uuid
         })
     }
 }
 
-export {DxfViewer}
+export { DxfViewer }

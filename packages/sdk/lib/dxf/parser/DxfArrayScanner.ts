@@ -1,4 +1,4 @@
-import log from '@/utils/log/Logger';
+import log from '#/utils/log/Logger';
 
 export interface IGroup {
 	code: number;
@@ -23,7 +23,7 @@ export default class DxfArrayScanner {
 
 	constructor(data: string[]) {
 		this._data = data;
-        // console.log('this._data:', this._data);
+		// console.log('this._data:', this._data);
 	}
 
 	/**
@@ -32,41 +32,41 @@ export default class DxfArrayScanner {
 	 */
 	public next() {
 		if (!this.hasNext()) {
-            // console.log('this._eof:', this._eof);
-            // console.log('this._pointer:', this._pointer);
-            
-			if (!this._eof){
-                log.error('输入结束异常:EOF组未在文件结束前读取。代码结束: ' + this._data[this._pointer]);
-            }else{
-                log.error('在读取完 EOF 组后无法调用 `next`');
-            }    
+			// console.log('this._eof:', this._eof);
+			// console.log('this._pointer:', this._pointer);
 
-            this._eof = true;
-            return { code: 0, value: 'EOF' };
+			if (!this._eof) {
+				log.error('输入结束异常:EOF组未在文件结束前读取。代码结束: ' + this._data[this._pointer]);
+			} else {
+				log.error('在读取完 EOF 组后无法调用 `next`');
+			}
+
+			this._eof = true;
+			return { code: 0, value: 'EOF' };
 		}
 
 		const group = {
 			code: parseInt(this._data[this._pointer])
 		} as IGroup;
 
-        if(isNaN(group.code)){
-            // 回退code: 如果当前code为NaN,很可能是因为当前行和上一行是连贯数据，被libreDWG解析为两行，所以要回退code采用同一个code解析
-            this._pointer--;
-            group.code = parseInt(this._data[this._pointer - 1]);
+		if (isNaN(group.code)) {
+			// 回退code: 如果当前code为NaN,很可能是因为当前行和上一行是连贯数据，被libreDWG解析为两行，所以要回退code采用同一个code解析
+			this._pointer--;
+			group.code = parseInt(this._data[this._pointer - 1]);
 
-            // TODO: 或者使用跳过当前行操作？
-            // this._pointer++;
-            // return this.next();
-        }
-        
+			// TODO: 或者使用跳过当前行操作？
+			// this._pointer++;
+			// return this.next();
+		}
+
 		this._pointer++;
 
 		group.value = parseGroupValue(group.code, this._data[this._pointer].trim());
 
 		this._pointer++;
 
-        // if (group.code === 0 && (group.value === 'EOF' || (group.value === 'ENDSEC' && !this.hasNext()))) this._eof = true;
-        if (group.code === 0 && group.value === 'EOF') this._eof = true;
+		// if (group.code === 0 && (group.value === 'EOF' || (group.value === 'ENDSEC' && !this.hasNext()))) this._eof = true;
+		if (group.code === 0 && group.value === 'EOF') this._eof = true;
 
 		this.lastReadGroup = group;
 
