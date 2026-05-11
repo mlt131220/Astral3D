@@ -7,14 +7,7 @@
  */
 import { Mesh, Group, Bone } from "three";
 import { BASE64_TYPES, TYPED_ARRAYS } from "@/constant";
-import {
-	fetchController,
-	waitAstralZipConstructor,
-	readAstralZipArrayBuffer,
-	getAstralZipWorkers,
-	readAstralZipText,
-	readAstralZipBlob,
-} from "@/utils";
+import { fetchController, waitAstralZipConstructor, readAstralZipArrayBuffer, getAstralZipWorkers, readAstralZipText, readAstralZipBlob } from "@/utils";
 import { PackageSkeleton } from "@/core/loader/Package.Skeleton";
 import { useDispatchSignal } from "@/hooks";
 import { ObjectLoader } from "./ObjectLoader";
@@ -31,7 +24,7 @@ interface IPackConfig {
 
 interface IUnpackConfig {
 	url: string; // 首包url
-	onSceneLoad?: (sceneJson: ISceneJson, configJson: IAppProject.Config) => void; // 场景首包加载完成回调
+	onSceneLoad?: (sceneJson: ISceneJson, configJson: IAppProject.Config | undefined) => void; // 场景首包加载完成回调
 	onProgress?: (progress: number) => void; // 场景加载进度回调
 	onComplete?: () => void; // 场景加载完成回调.
 }
@@ -46,8 +39,42 @@ interface SourceData {
 
 interface IZipGenerateFile {
 	name: string;
-	data: IAstralZip.Input;
+	data: Uint8Array;
+	options?: IAstralZip.FileOptions;
 }
+
+/**
+ * 复用文本编码器，避免场景分包时重复创建编码器对象。
+ */
+const ASTRAL_ZIP_TEXT_ENCODER = new TextEncoder();
+
+/**
+ * ZIP 打包热路径统一使用同一种二进制输入，避免大场景下在 JS/WASM 边界重复走字符串桥接。
+ * 这里在进入 AstralZip 之前完成一次收口，后续打包只处理 Uint8Array。
+ * @param data 原始场景分包数据
+ * @returns {Uint8Array} 返回可直接传入 AstralZip 的二进制内容
+ */
+const toAstralZipUint8Array = (data: string | ArrayBuffer): Uint8Array => {
+	if (typeof data === "string") {
+		return ASTRAL_ZIP_TEXT_ENCODER.encode(data);
+	}
+
+	return new Uint8Array(data.slice(0));
+};
+
+/**
+ * File 构造在严格类型下要求可确定为 ArrayBuffer 的 BlobPart。
+ * 这里把 Uint8Array 统一收口成独立的 ArrayBuffer，避免 SharedArrayBuffer 联合类型干扰保存链路。
+ * @param data ZIP 二进制内容
+ * @returns {ArrayBuffer} 返回可直接用于 File/Blob 构造的独立缓冲区
+ */
+const toStandaloneArrayBuffer = (data: Uint8Array): ArrayBuffer => {
+	if (data.buffer instanceof ArrayBuffer) {
+		return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+	}
+
+	return Uint8Array.from(data).buffer as ArrayBuffer;
+};
 
 interface GroupJson {
 	images: any[];
@@ -442,7 +469,13 @@ export class Package {
 			if (item.texture !== undefined) {
 				result.push({
 					name: `Textures/${item.name}`,
-					data: item.texture,
+					data: toAstralZipUint8Array(item.texture),
+					options: {
+						compression: "DEFLATE",
+						compressionOptions: {
+							level: 7,
+						},
+					},
 				});
 				return result;
 			}
@@ -450,7 +483,13 @@ export class Package {
 			if (item.geometry !== undefined) {
 				result.push({
 					name: `Geometries/${item.name}`,
-					data: item.geometry,
+					data: toAstralZipUint8Array(item.geometry),
+					options: {
+						compression: "DEFLATE",
+						compressionOptions: {
+							level: 7,
+						},
+					},
 				});
 				return result;
 			}
@@ -458,7 +497,13 @@ export class Package {
 			if (item.drawing !== undefined) {
 				result.push({
 					name: `Drawing/${item.name}`,
-					data: item.drawing,
+					data: toAstralZipUint8Array(item.drawing),
+					options: {
+						compression: "DEFLATE",
+						compressionOptions: {
+							level: 9,
+						},
+					},
 				});
 				return result;
 			}
@@ -466,7 +511,13 @@ export class Package {
 			if (item.json !== undefined) {
 				result.push({
 					name: item.name,
-					data: item.json,
+					data: toAstralZipUint8Array(item.json),
+					options: {
+						compression: "DEFLATE",
+						compressionOptions: {
+							level: 7,
+						},
+					},
 				});
 			}
 
@@ -485,19 +536,19 @@ export class Package {
 		const files = this.toAstralZipFiles(sourceData);
 
 		const content = (await AstralZip.generateAsync(files, {
-			type: "blob",
+			type: "uint8array",
 			compression: "DEFLATE",
 			compressionOptions: {
 				level: 7,
 			},
 			workers: getAstralZipWorkers(),
-		})) as Blob;
+		})) as Uint8Array;
 
 		if (!content) {
 			throw new Error("zip 打包失败");
 		}
 
-		const zipFile = new File([content], `${zipName}.zip`, { type: "application/zip" });
+		const zipFile = new File([toStandaloneArrayBuffer(content)], `${zipName}.zip`, { type: "application/zip" });
 
 		this.totalSize += zipFile.size;
 
@@ -622,7 +673,7 @@ export class Package {
 		// map 存储 json 解析完成后执行的 function; key 为 uuid
 		const funcMap = new Map<string, Function>();
 
-		const loadScene = (sceneJson: ISceneJson, drawingInfo: IDrawingInfo | null, configJson: IAppProject.Config) => {
+		const loadScene = (sceneJson: ISceneJson, drawingInfo: IDrawingInfo | null, configJson: IAppProject.Config | undefined) => {
 			App.fromJSON(sceneJson).then(async scene => {
 				// 还原控制器
 				if (sceneJson.controls?.state) {
@@ -722,8 +773,8 @@ export class Package {
 				.then(async file => {
 					unpackConfig.onProgress && unpackConfig.onProgress(1);
 
-					// @ts-ignore
-					let sceneJson: ISceneJson = undefined, configJson: IAppProject.Config = undefined;
+					let sceneJson: ISceneJson | undefined = undefined,
+						configJson: IAppProject.Config | undefined = undefined;
 
 					// 开始解压首包
 					const AstralZip = await waitAstralZipConstructor();
@@ -814,6 +865,14 @@ export class Package {
 						}
 					} finally {
 						res.dispose();
+					}
+
+					/**
+					 * scene.json ????????????????????????
+					 * ?????????????????????????
+					 */
+					if (!sceneJson) {
+						throw new Error("?????? scene.json");
 					}
 
 					totalZipNumber = sceneJson.totalZipNumber || 0;

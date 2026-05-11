@@ -41,7 +41,7 @@ declare namespace IAstralZip {
 		create(): IAstralZip;
 		loadAsync(data: Uint8Array | ArrayBuffer | Blob): Promise<IAstralZip>;
 		generateAsync(
-			files: Array<{ name: string; data?: AstralZipInput; dir?: boolean }>,
+			files: Array<{ name: string; data?: IAstralZip.Input; dir?: boolean; options?: IAstralZip.FileOptions }>,
 			options?: IAstralZip.GenerateOptions
 		): Promise<Uint8Array | ArrayBuffer | Blob | string>;
 	}
