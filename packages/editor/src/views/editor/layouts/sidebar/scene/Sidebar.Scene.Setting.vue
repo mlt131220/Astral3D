@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import {nextTick, onBeforeUnmount, onMounted, ref, toRaw} from "vue";
-import {Color,Texture,CubeTexture,EquirectangularReflectionMapping} from "three";
+import {Color,Texture,CubeTexture,EquirectangularReflectionMapping,MathUtils} from "three";
 import {App,Hooks} from "@astral3d/engine";
 import {t} from "@/language";
 import EsInputNumber from "@/components/es/EsInputNumber.vue";
@@ -101,6 +101,7 @@ function refreshUI() {
         backgroundEquirectangularTexture.value = scene.background;
         backgroundBlurriness.value = scene.backgroundBlurriness;
         backgroundIntensity.value = scene.backgroundIntensity;
+        backgroundRotation.value = scene.backgroundRotation.y * MathUtils.RAD2DEG;
 
         backgroundType.value = 'Equirectangular';
       } else {
