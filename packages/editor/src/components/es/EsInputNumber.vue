@@ -99,7 +99,7 @@ function onMouseMove(event) {
   let value = onMouseDownValue + (distance / (event.shiftKey ? 5 : 50)) * (step.value || 1);
   value = Math.min(props.max, Math.max(props.min, value));
 
-  if (onMouseDownValue !== value && value !== null) {
+  if (esNumber.value !== value && value !== null) {
     value = parseFloat(value.toFixed(props.decimal));
 
     esNumber.value = value;
