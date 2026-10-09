@@ -158,7 +158,7 @@ const updateUI = Utils.throttle(function(object) {
         objectData.color = object.color.getStyle();
     }
     if (object.groundColor !== undefined) {
-        objectData.groundColor = object.color.getStyle();
+        objectData.groundColor = object.groundColor.getStyle();
     }
     if (object.distance !== undefined) {
         objectData.distance = object.distance;
