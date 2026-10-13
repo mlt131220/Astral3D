@@ -219,19 +219,19 @@ const update = (method: string) => {
         },
         position: () => {
             const newPosition = new THREE.Vector3(objectData.position.x, objectData.position.y, objectData.position.z);
-            if (object.position.distanceTo(newPosition) >= 0.01) {
+            if (!object.position.equals(newPosition)) {
                 App.execute(new SetPositionCommand(object, newPosition));
             }
         },
         rotation: () => {
             const newRotation = new THREE.Euler(objectData.rotation.x * THREE.MathUtils.DEG2RAD, objectData.rotation.y * THREE.MathUtils.DEG2RAD, objectData.rotation.z * THREE.MathUtils.DEG2RAD);
-            if (new THREE.Vector3().setFromEuler(object.rotation).distanceTo(new THREE.Vector3().setFromEuler(newRotation)) >= 0.01) {
+            if (!new THREE.Vector3().setFromEuler(object.rotation).equals(new THREE.Vector3().setFromEuler(newRotation))) {
                 App.execute(new SetRotationCommand(object, newRotation, undefined));
             }
         },
         scale: () => {
             const newScale = new THREE.Vector3(objectData.scale.x, objectData.scale.y, objectData.scale.z);
-            if (object.scale.distanceTo(newScale) >= 0.01) {
+            if (!object.scale.equals(newScale)) {
                 App.execute(new SetScaleCommand(object, newScale, undefined));
             }
         },
