@@ -28,8 +28,8 @@ function update() {
   App.execute(new SetGeometryCommand(App.selected, new LatheGeometry(
       objectData.points,
       objectData.segments,
-      objectData.phiStart,
-      objectData.phiLength
+      objectData.phiStart * Math.PI / 180,
+      objectData.phiLength * Math.PI / 180
   )))
 }
 </script>
