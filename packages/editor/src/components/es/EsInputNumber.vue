@@ -75,6 +75,8 @@ const pointer = {x: 0, y: 0};
 const prevPointer = {x: 0, y: 0};
 
 function onMouseDown(event) {
+  if (attrs.disabled || attrs.disabled === '') return;
+
   event.preventDefault();
 
   if(!Number.isFinite(esNumber.value) || esNumber.value === undefined || esNumber.value === null) return;
