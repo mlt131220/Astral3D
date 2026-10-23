@@ -51,7 +51,7 @@ class CSM {
             parent: App.scene
         });
 
-        this.instance.fade = true;
+        this.instance.fade = _config.fade;
 
         this.instance.lights.forEach(light => {
             // 忽略对csm相关object的处理
