@@ -52,11 +52,6 @@ class Selector {
 					return
 				}
 
-				if(this.lastIsIFC){
-					useDispatchSignal("IFCPropertiesVisible",false)
-					this.lastIsIFC = false;
-				}
-
 				if(object.proxy){
           			this.select(object.proxy);
 				} else {
@@ -69,6 +64,11 @@ class Selector {
 	}
 
 	select(object:THREE.Object3D | null) {
+		if(this.lastIsIFC){
+			useDispatchSignal("IFCPropertiesVisible",false)
+			this.lastIsIFC = false;
+		}
+
 		if (App.selected === object) return;
 
 		App.selected = object;
