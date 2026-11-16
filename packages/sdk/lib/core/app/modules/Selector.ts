@@ -1,12 +1,14 @@
 import {useDispatchSignal, useAddSignal} from '@/hooks';
 import { MeshLambertMaterial } from "three";
 import App from "@/core/app/App.ts";
-import Loader from "@/core/loader/Loader.ts";
+import type { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
 import * as THREE from "three";
 
 class Selector {
 	public lastIsIFC = false; // 上一次选中的是否是IFC模型
 	public lastIFCModelID :number | null = null; // 上一次选中的IFC模型ID
+	private ifcModel: IFCModel | null = null;
+	private ifcSelectionRequest = 0;
 	private preselectMat = new MeshLambertMaterial({
 		transparent: true,
 		opacity: 0.6,
@@ -15,59 +17,72 @@ class Selector {
 	});
 
 	constructor() {
-		// signals
-		useAddSignal("intersectionsDetected",async (intersects) => {
-			if(this.lastIFCModelID !== null){
-				// 移除之前IFC模型的高亮部分
-				Loader._ifcLoader.ifcManager.removeSubset(this.lastIFCModelID, this.preselectMat);
-				this.lastIFCModelID = null;
+		useAddSignal("objectRemoved", (object: THREE.Object3D) => {
+			if (this.ifcModel?.isAncestor(object)) this.clearIFCSelection();
+		});
+		useAddSignal("objectChanged", (object: THREE.Object3D) => {
+			if (!object.visible && this.ifcModel?.isAncestor(object)) this.clearIFCSelection();
+		});
+		useAddSignal("intersectionsDetected", async (intersects: THREE.Intersection[]) => {
+			const hit = intersects[0];
+			const model = hit?.object as (IFCModel & { isIFC?: boolean }) | undefined;
+			const ifc = model?.ifcManager;
+			if (!model?.isIFC || hit.faceIndex == null || !ifc) {
+				this.select(hit?.object.proxy ?? hit?.object ?? null);
+				return;
 			}
 
-			if (intersects.length > 0) {
-				const object = intersects[0].object;
+			this.clearIFCSelection();
+			this.ifcModel = model;
+			const request = this.ifcSelectionRequest;
+			const { geometry, modelID } = model;
+			try {
+				const id = ifc.getExpressId(geometry, hit.faceIndex);
+				const props = await ifc.getItemProperties(modelID, id, true);
+				// 属性查询期间可能已经选中其他构件或点击了空白。
+				if (request !== this.ifcSelectionRequest) return;
 
-				// ---- 2023/8/10 添加IFC模型检测判断-----
-				if(object.isIFC){
-					const index = intersects[0].faceIndex;
-					const geometry = object.geometry;
-					const ifc = Loader._ifcLoader.ifcManager;
-					const id = ifc.getExpressId(geometry, index);
-
-					this.lastIFCModelID = object.modelID;
-					const props = await ifc.getItemProperties(this.lastIFCModelID as number, id,true);
-
-					useDispatchSignal("IFCPropertiesVisible",true,props)
-					this.lastIsIFC = true;
-
-					// TODO 部件选中
-					// 创建子集
-					Loader._ifcLoader.ifcManager.createSubset({
-						modelID: this.lastIFCModelID as number,
-						ids: [id],
-						material: this.preselectMat,
-						scene: App.scene,
-						removePrevious: true,
-					});
-
-					return
+				const subset = ifc.createSubset({
+					modelID,
+					ids: [id],
+					material: this.preselectMat,
+					scene: App.scene,
+					removePrevious: true,
+				});
+				// 高亮留在场景根节点供忽略标记过滤，渲染时直接使用源模型的世界矩阵。
+				subset.ignore = true;
+				subset.matrixWorldAutoUpdate = false;
+				subset.matrixWorld = model.matrixWorld;
+				subset.layers = model.layers;
+				this.lastIFCModelID = modelID;
+				this.lastIsIFC = true;
+				useDispatchSignal("IFCPropertiesVisible", true, props);
+				App.viewer?.render();
+			} catch (error) {
+				if (request === this.ifcSelectionRequest) {
+					this.clearIFCSelection();
+					App.log.error("IFC 构件选择失败：" + error);
 				}
-
-				if(object.proxy){
-          			this.select(object.proxy);
-				} else {
-					this.select(object);
-				}
-			} else {
-				this.select( null );
 			}
-		})
+		});
+	}
+
+	private clearIFCSelection() {
+		this.ifcSelectionRequest++;
+		if (this.lastIFCModelID !== null) {
+			this.ifcModel?.ifcManager?.removeSubset(this.lastIFCModelID, this.preselectMat);
+			this.lastIFCModelID = null;
+		}
+		this.ifcModel = null;
+		if (this.lastIsIFC) {
+			this.lastIsIFC = false;
+			useDispatchSignal("IFCPropertiesVisible", false);
+			App.viewer?.render();
+		}
 	}
 
 	select(object:THREE.Object3D | null) {
-		if(this.lastIsIFC){
-			useDispatchSignal("IFCPropertiesVisible",false)
-			this.lastIsIFC = false;
-		}
+		this.clearIFCSelection();
 
 		if (App.selected === object) return;
 

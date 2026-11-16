@@ -5,6 +5,7 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 import { DEFAULT_JSON_MATERIAL_PROPERTIES, DEFAULT_MATERIAL_PROPERTIES, SUPPORTED_MATERIAL_BLENDING_MODES } from './constants';
+import { normalizeMaterialBlending } from '@/utils/scene/blending';
 import Initializer from './Initializer';
 import { INITIALIZER_TYPE_TEXTURE as type } from './types';
 import { withDefaults } from '../utils';
@@ -46,9 +47,9 @@ export default class Texture extends Initializer {
      * @type {SpriteMaterial}
      */
 
-    this.material = new SpriteMaterial(_objectSpread(_objectSpread({}, {
+    this.material = normalizeMaterialBlending(new SpriteMaterial(_objectSpread(_objectSpread({}, {
       map: loadedTexture
-    }), this.materialProperties));
+    }), this.materialProperties)));
     /**
      * @desc THREE.Sprite instance.
      * @type {Sprite}

@@ -67,7 +67,6 @@ const rendererConfig = reactive(JSON.parse(JSON.stringify(App.project.getKey("re
 const shadowTypeOptions = [
   {label: "Basic", value: 0},
   {label: "PCF", value: 1},
-  {label: "PCF Soft", value: 2},
   {label: "VSM", value: 3}
 ];
 // 色调映射选项

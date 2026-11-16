@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { serializeMaterial } from "@/utils/scene/blending";
 
 /**
  * 在对象以及后代中执行的回调函数,仅对满足条件的对象执行
@@ -150,7 +151,7 @@ THREE.Object3D.prototype.toJSON = function (meta: any) {
 
     function serialize(library, element) {
         if (library[element.uuid] === undefined) {
-            library[element.uuid] = element.toJSON(meta);
+            library[element.uuid] = element.isMaterial ? serializeMaterial(element, meta) : element.toJSON(meta);
         }
         return element.uuid;
     }

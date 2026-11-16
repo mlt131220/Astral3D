@@ -1,0 +1,177 @@
+diff --git a/examples/jsm/loaders/PLYLoader.js b/examples/jsm/loaders/PLYLoader.js
+index 746964b01a28319f9d61af8f0d0ff54d6fa05891..cafd1c8ef1923a3bf73e517cbabc419282584c69 100644
+--- a/examples/jsm/loaders/PLYLoader.js
++++ b/examples/jsm/loaders/PLYLoader.js
+@@ -372,12 +372,6 @@ class PLYLoader extends Loader {
+ 
+ 		}
+ 
+-		function isFloatType( type ) {
+-
+-			return type === 'float' || type === 'float32' || type === 'double' || type === 'float64';
+-
+-		}
+-
+ 		function getAttributeDescriptor( properties ) {
+ 
+ 			function findProperty( names ) {
+@@ -536,11 +530,8 @@ class PLYLoader extends Loader {
+ 
+ 			if ( buffer.colors.length > 0 ) {
+ 
+-				const colorType = vertexDescriptor.color.type;
+-				const normalized = ! isFloatType( colorType );
+-
+-				const ColorClass = getBufferAttributeClass( colorType );
+-				geometry.setAttribute( 'color', new ColorClass( buffer.colors, 3, normalized ) );
++				// 线性颜色直接保留为浮点数，避免暗部被再次量化。
++				geometry.setAttribute( 'color', new Float32BufferAttribute( buffer.colors, 3 ) );
+ 
+ 			}
+ 
+@@ -570,11 +561,7 @@ class PLYLoader extends Loader {
+ 
+ 				if ( buffer.faceVertexColors.length > 0 ) {
+ 
+-					const colorType = buffer.descriptors.face.color.type;
+-					const normalized = ! isFloatType( colorType );
+-
+-					const ColorClass = getBufferAttributeClass( colorType );
+-					geometry.setAttribute( 'color', new ColorClass( buffer.faceVertexColors, 3, normalized ) );
++					geometry.setAttribute( 'color', new Float32BufferAttribute( buffer.faceVertexColors, 3 ) );
+ 
+ 				}
+ 
+@@ -624,7 +611,6 @@ class PLYLoader extends Loader {
+ 				if ( color.usage ) {
+ 
+ 					const scale = getColorScale( color.type );
+-					const isFloat = isFloatType( color.type );
+ 
+ 					// convert to float for color space conversion
+ 
+@@ -635,15 +621,7 @@ class PLYLoader extends Loader {
+ 						SRGBColorSpace
+ 					);
+ 
+-					// convert back to original type
+-
+-					const invScale = 1 / scale;
+-
+-					buffer.colors.push(
+-						isFloat ? _color.r : Math.round( _color.r * invScale ),
+-						isFloat ? _color.g : Math.round( _color.g * invScale ),
+-						isFloat ? _color.b : Math.round( _color.b * invScale )
+-					);
++					buffer.colors.push( _color.r, _color.g, _color.b );
+ 
+ 				}
+ 
+@@ -712,13 +690,7 @@ class PLYLoader extends Loader {
+ 						SRGBColorSpace
+ 					);
+ 
+-					// convert back to original type
+-
+-					const invScale = 1 / scale;
+-
+-					const r = _color.r * invScale;
+-					const g = _color.g * invScale;
+-					const b = _color.b * invScale;
++					const { r, g, b } = _color;
+ 
+ 					buffer.faceVertexColors.push( r, g, b );
+ 					buffer.faceVertexColors.push( r, g, b );
+diff --git a/examples/jsm/loaders/VOXLoader.js b/examples/jsm/loaders/VOXLoader.js
+index 3453d644e116890be87212d9a05107ed43792751..7aec285b29daab513f81f81d592ac26eb52172d8 100644
+--- a/examples/jsm/loaders/VOXLoader.js
++++ b/examples/jsm/loaders/VOXLoader.js
+@@ -613,6 +613,9 @@ function buildMesh( chunk ) {
+ 	const sx = size.x;
+ 	const sy = size.y;
+ 	const sz = size.z;
++	const stride = [ 1, sx, sx * sy ];
++	const min = [ sx, sy, sz ];
++	const max = [ -1, -1, -1 ];
+ 
+ 	// Build volume with color indices
+ 
+@@ -625,7 +628,15 @@ function buildMesh( chunk ) {
+ 		const z = data[ j + 2 ];
+ 		const c = data[ j + 3 ];
+ 
+-		volume[ x + y * sx + z * sx * sy ] = c;
++		volume[ x + y * stride[ 1 ] + z * stride[ 2 ] ] = c;
++		if ( c === 0 ) continue;
++
++		min[ 0 ] = Math.min( min[ 0 ], x );
++		min[ 1 ] = Math.min( min[ 1 ], y );
++		min[ 2 ] = Math.min( min[ 2 ], z );
++		max[ 0 ] = Math.max( max[ 0 ], x );
++		max[ 1 ] = Math.max( max[ 1 ], y );
++		max[ 2 ] = Math.max( max[ 2 ], z );
+ 
+ 	}
+ 
+@@ -638,26 +649,19 @@ function buildMesh( chunk ) {
+ 	const _color = new Color();
+ 	let hasColors = false;
+ 
+-	// Process each of the 6 face directions
+-	// dims: the 3 axis sizes, d: which axis is normal to the face
+-	const dims = [ sx, sy, sz ];
++	// 仅扫描被占用的体素范围，坐标仍以文件声明的尺寸为准。
+ 
+ 	for ( let d = 0; d < 3; d ++ ) {
+ 
+ 		const u = ( d + 1 ) % 3;
+ 		const v = ( d + 2 ) % 3;
+ 
+-		const dimsD = dims[ d ];
+-		const dimsU = dims[ u ];
+-		const dimsV = dims[ v ];
+-
+-		const q = [ 0, 0, 0 ];
++		const dimsU = Math.max( 0, max[ u ] - min[ u ] + 1 );
++		const dimsV = Math.max( 0, max[ v ] - min[ v ] + 1 );
+ 		const mask = new Int16Array( dimsU * dimsV );
+ 
+-		q[ d ] = 1;
+-
+ 		// Sweep through slices
+-		for ( let slice = 0; slice <= dimsD; slice ++ ) {
++		for ( let slice = min[ d ]; slice <= max[ d ] + 1; slice ++ ) {
+ 
+ 			// Build mask for this slice
+ 			let n = 0;
+@@ -666,16 +670,9 @@ function buildMesh( chunk ) {
+ 
+ 				for ( let uu = 0; uu < dimsU; uu ++ ) {
+ 
+-					const pos = [ 0, 0, 0 ];
+-					pos[ d ] = slice;
+-					pos[ u ] = uu;
+-					pos[ v ] = vv;
+-
+-					const x0 = pos[ 0 ], y0 = pos[ 1 ], z0 = pos[ 2 ];
+-
+-					// Get voxel behind and in front of this face
+-					const behind = ( slice > 0 ) ? volume[ ( x0 - q[ 0 ] ) + ( y0 - q[ 1 ] ) * sx + ( z0 - q[ 2 ] ) * sx * sy ] : 0;
+-					const infront = ( slice < dimsD ) ? volume[ x0 + y0 * sx + z0 * sx * sy ] : 0;
++					const index = slice * stride[ d ] + ( min[ u ] + uu ) * stride[ u ] + ( min[ v ] + vv ) * stride[ v ];
++					const behind = ( slice > min[ d ] ) ? volume[ index - stride[ d ] ] : 0;
++					const infront = ( slice <= max[ d ] ) ? volume[ index ] : 0;
+ 
+ 					// Face exists if exactly one side is solid
+ 					if ( behind > 0 && infront === 0 ) {
+@@ -742,8 +739,8 @@ function buildMesh( chunk ) {
+ 						// Add quad
+ 						const pos = [ 0, 0, 0 ];
+ 						pos[ d ] = slice;
+-						pos[ u ] = uu;
+-						pos[ v ] = vv;
++						pos[ u ] = min[ u ] + uu;
++						pos[ v ] = min[ v ] + vv;
+ 
+ 						const du = [ 0, 0, 0 ];
+ 						const dv = [ 0, 0, 0 ];

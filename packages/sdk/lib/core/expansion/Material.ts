@@ -1,4 +1,5 @@
 import { Material } from "three";
+import { getConfiguredPremultipliedAlpha, normalizeMaterialBlending } from "@/utils/scene/blending";
 
 /**
  * 从另一个材质中复制相同的属性（材质类型可能不同）
@@ -12,4 +13,5 @@ Material.prototype.copyAttr = function (source) {
             this[key] = source[key];
         }
     })
+    normalizeMaterialBlending(this, getConfiguredPremultipliedAlpha(source));
 }

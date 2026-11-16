@@ -1,5 +1,6 @@
 import { Command } from './Command';
 import { useDispatchSignal } from "@/hooks";
+import { getConfiguredPremultipliedAlpha, normalizeMaterialBlending } from "@/utils/scene/blending";
 import App from "../app/App";
 
 /**
@@ -14,6 +15,7 @@ class SetMaterialValueCommand extends Command {
 	public oldValue;
 	public newValue;
 	public attributeName;
+	private materialSlot: number;
 
 	constructor(object, attributeName, newValue, materialSlot = 0 ) {
 		super();
@@ -23,25 +25,35 @@ class SetMaterialValueCommand extends Command {
 		this.updatable = true;
 
 		this.object = object;
+		this.materialSlot = materialSlot;
 		this.material = App.getObjectMaterial( object, materialSlot );
 
-		this.oldValue = ( this.material !== undefined ) ? this.material[ attributeName ] : undefined;
+		if (this.material) {
+			this.oldValue = attributeName === "premultipliedAlpha"
+				? getConfiguredPremultipliedAlpha(this.material)
+				: this.material[attributeName];
+		}
 		this.newValue = newValue;
 
 		this.attributeName = attributeName;
 	}
 
 	execute() {
-		this.material[ this.attributeName ] = this.newValue;
-		this.material.needsUpdate = true;
-		useDispatchSignal("objectChanged",this.object);
-		useDispatchSignal("materialChanged",this.material);
+		this.applyValue(this.newValue);
 	}
 
 	undo() {
-		this.material[ this.attributeName ] = this.oldValue;
-		this.material.needsUpdate = true;
+		this.applyValue(this.oldValue);
+	}
 
+	private applyValue(value) {
+		if (this.attributeName === "premultipliedAlpha") {
+			normalizeMaterialBlending(this.material, value);
+		} else {
+			this.material[this.attributeName] = value;
+			if (this.attributeName === "blending") normalizeMaterialBlending(this.material);
+		}
+		this.material.needsUpdate = true;
 		useDispatchSignal("objectChanged",this.object);
 		useDispatchSignal("materialChanged",this.material);
 	}
@@ -55,6 +67,7 @@ class SetMaterialValueCommand extends Command {
 
 		output.objectUuid = this.object.uuid;
 		output.attributeName = this.attributeName;
+		output.materialSlot = this.materialSlot;
 		output.oldValue = this.oldValue;
 		output.newValue = this.newValue;
 
@@ -68,6 +81,8 @@ class SetMaterialValueCommand extends Command {
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;
 		this.object = App.getObjectByUuid( json.objectUuid );
+		this.materialSlot = json.materialSlot ?? 0;
+		this.material = App.getObjectMaterial(this.object, this.materialSlot);
 	}
 
 }

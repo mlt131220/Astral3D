@@ -4,9 +4,9 @@ packages:
 
 catalog:
   '@types/node': ^24.6.0
-  '@types/three': 0.176.0
+  '@types/three': 0.187.0
   '@vitejs/plugin-vue': ^6.0.1
-  'three': 0.176.0
+  'three': 0.187.0
   'rollup-plugin-visualizer': ^6.0.1
   'vue': ^3.5.22
   "vite-plugin-static-copy": ^3.1.0
@@ -15,3 +15,7 @@ catalog:
   'naive-ui': ^2.43.1
 
 autoInstallPeers: true
+
+patchedDependencies:
+  web-ifc-three@0.0.126: patches/web-ifc-three@0.0.126.patch
+  three@0.187.0: patches/three@0.187.0.patch

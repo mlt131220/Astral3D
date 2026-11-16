@@ -6,7 +6,6 @@
  */
 import * as THREE from 'three';
 import CameraControls from 'camera-controls';
-import { Timer } from 'three/examples/jsm/misc/Timer.js';
 import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import {PreviewOptions} from "@/core/preview/PreviewOptions.ts";
 import Loader from "@/core/loader/Loader.ts";
@@ -55,7 +54,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
     public modules: PreviewerModules;
     public css3DRenderer: CSS3DRenderer;
 
-    public timer = new Timer();
+    public timer = new THREE.Timer();
     private resizeObserver: ResizeObserver | null = null;
     private resize: () => void;
 
@@ -125,7 +124,7 @@ export default class Preview extends THREE.EventDispatcher<PreviewerEventMap>  {
         renderer.toneMappingExposure = 1;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.autoUpdate = false;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = THREE.PCFShadowMap;
         renderer.xr.enabled = false;
         renderer.setClearColor(0x272727, 1);
         renderer.setPixelRatio(Math.max(Math.ceil(window.devicePixelRatio), 1));

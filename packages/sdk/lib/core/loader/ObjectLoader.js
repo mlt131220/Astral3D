@@ -11,6 +11,7 @@ import {useDispatchSignal} from "@/hooks";
 import ParticleEmitter from "@/core/objects/ParticleEmitter";
 import Billboard from "@/core/objects/Billboard";
 import {HtmlPanel, HtmlSprite} from "@/core/objects/HtmlPanel";
+import {normalizeMaterialBlending} from "@/utils/scene/blending";
 
 class ObjectLoader extends THREE.Loader {
     constructor(manager) {
@@ -298,7 +299,7 @@ class ObjectLoader extends THREE.Loader {
 
                 if (cache[data.uuid] === undefined) {
 
-                    cache[data.uuid] = loader.parse(data);
+                    cache[data.uuid] = normalizeMaterialBlending(loader.parse(data));
 
                 }
 
@@ -429,14 +430,14 @@ class ObjectLoader extends THREE.Loader {
 
                     }
 
-                    images[image.uuid] = new THREE.Source(imageArray);
+                    images[image.uuid] = new THREE.TextureSource(imageArray);
 
                 } else {
 
                     // load single image
 
                     const deserializedImage = deserializeImage(image.url);
-                    images[image.uuid] = new THREE.Source(deserializedImage);
+                    images[image.uuid] = new THREE.TextureSource(deserializedImage);
 
 
                 }
@@ -565,7 +566,7 @@ class ObjectLoader extends THREE.Loader {
 
                         }
 
-                        images[image.uuid] = new THREE.Source(imageArray);
+                        images[image.uuid] = new THREE.TextureSource(imageArray);
 
                     } else {
 
@@ -573,8 +574,8 @@ class ObjectLoader extends THREE.Loader {
 
                         const deserializedImage = await deserializeImage(image.url);
                         const source = deserializedImage?.isCompressedTexture === true
-                            ? new THREE.Source(deserializedImage.image)
-                            : new THREE.Source(deserializedImage);
+                            ? new THREE.TextureSource(deserializedImage.image)
+                            : new THREE.TextureSource(deserializedImage);
                         if (deserializedImage?.isCompressedTexture === true) {
                             // 压缩贴图的 Source.data 必须保持为 image 描述，不能塞入 Texture 实例
                             source.__astralPackageKTX2Texture = deserializedImage;
@@ -675,7 +676,21 @@ class ObjectLoader extends THREE.Loader {
 
                 if (data.name !== undefined) texture.name = data.name;
 
-                if (data.mapping !== undefined) texture.mapping = parseConstant(data.mapping, TEXTURE_MAPPING);
+                if (data.mapping === 306 || data.mapping === 'CubeUVReflectionMapping') {
+                    // r187 从原始环境贴图生成立方体 PMREM，旧预滤图集不能直接采样。
+                    const width = image?.naturalWidth || image?.width;
+                    const height = image?.naturalHeight || image?.height;
+                    if (texture.isCubeTexture && image.length === 6) {
+                        texture.mapping = THREE.CubeReflectionMapping;
+                    } else if (height > 0 && width === height * 2) {
+                        texture.mapping = THREE.EquirectangularReflectionMapping;
+                    } else {
+                        console.warn('缺少可用于重建 PMREM 的原始环境贴图，已跳过旧图集', data.uuid);
+                        continue;
+                    }
+                } else if (data.mapping !== undefined) {
+                    texture.mapping = parseConstant(data.mapping, TEXTURE_MAPPING);
+                }
                 if (data.channel !== undefined) texture.channel = data.channel;
 
                 if (data.offset !== undefined) texture.offset.fromArray(data.offset);
@@ -782,7 +797,7 @@ class ObjectLoader extends THREE.Loader {
 
                     } else {
 
-                        object.background = getTexture(data.background);
+                        object.background = getTexture(data.background) ?? null;
 
                     }
 
@@ -790,7 +805,7 @@ class ObjectLoader extends THREE.Loader {
 
                 if (data.environment !== undefined) {
 
-                    object.environment = getTexture(data.environment);
+                    object.environment = getTexture(data.environment) ?? null;
 
                 }
 
@@ -1064,6 +1079,7 @@ class ObjectLoader extends THREE.Loader {
 
             if (data.matrixAutoUpdate !== undefined) object.matrixAutoUpdate = data.matrixAutoUpdate;
             if (object.matrixAutoUpdate) object.matrix.decompose(object.position, object.quaternion, object.scale);
+            object.matrixWorldNeedsUpdate = true;
 
         } else {
 

@@ -91,7 +91,11 @@ class ElementProxyReceiver extends EventDispatcher {
         // no-op
     }
 
-    // ----------------------- 2024/04/12 r163 版本 OrbitControls 新增的函数调用 ------------------------------
+    // 离屏 Worker 通过同一个代理分发画布和文档事件。
+    get ownerDocument() {
+        return this;
+    }
+
     getRootNode(){
         return this;
     }

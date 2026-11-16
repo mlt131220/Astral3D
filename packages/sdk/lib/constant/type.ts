@@ -38,8 +38,7 @@ export const TEXTURE_MAPPING = {
     CubeReflectionMapping: THREE.CubeReflectionMapping,
     CubeRefractionMapping: THREE.CubeRefractionMapping,
     EquirectangularReflectionMapping: THREE.EquirectangularReflectionMapping,
-    EquirectangularRefractionMapping: THREE.EquirectangularRefractionMapping,
-    CubeUVReflectionMapping: THREE.CubeUVReflectionMapping
+    EquirectangularRefractionMapping: THREE.EquirectangularRefractionMapping
 };
 
 export const TEXTURE_WRAPPING = {

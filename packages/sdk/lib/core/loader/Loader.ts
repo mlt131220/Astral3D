@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader.js";
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { unzipSync, strFromU8 } from 'three/examples/jsm/libs/fflate.module.js';
+import type { IFCLoader } from "web-ifc-three/IFCLoader";
 import { AddObjectCommand } from '../commands/AddObjectCommand';
 import { SetSceneCommand } from '../commands/Commands';
 import {useDispatchSignal} from "@/hooks";
@@ -100,8 +101,9 @@ class Loader {
 	protected _objectLoader:ObjectLoader | null = null;
 	protected _dracoLoader:DRACOLoader | null = null;
 	protected _ktx2Loader:KTX2Loader | null = null;
-	public _ifcLoader:any = null;
-    protected rgbeLoader:RGBELoader | null = null;
+    public _ifcLoader: IFCLoader | null = null;
+    private ifcQueue = Promise.resolve();
+    protected hdrLoader: HDRLoader | null = null;
     protected tgaLoader:TGALoader | null = null;
     protected _exrLoader:EXRLoader | null = null;
     protected textureLoader:THREE.TextureLoader | null = null;
@@ -159,9 +161,31 @@ class Loader {
         this._exrLoader = value;
     }
 
+    private parseIFC(buffer: ArrayBuffer) {
+        // 单个 Worker 的解析器复用当前模型和临时几何，按顺序执行导入。
+        const result = this.ifcQueue.then(async () => {
+            if (!this._ifcLoader?.ifcManager.state?.worker.active) {
+                const { IFCLoader } = await import("web-ifc-three/IFCLoader");
+                const loader = new IFCLoader();
+                const assetsUrl = new URL(import.meta.env.BASE_URL + "libs/web-ifc", import.meta.url);
+                const manager = loader.ifcManager;
+                await manager.useWebWorkers(true, assetsUrl.href + "/IFCWorker.js");
+                // web-ifc 以 Worker 所在目录为前缀查找 WASM。
+                await manager.setWasmPath("./");
+                await manager.applyWebIfcConfig({ USE_FAST_BOOLS: true });
+                this._ifcLoader = loader;
+            }
+
+            return this._ifcLoader.parse(buffer);
+        });
+
+        this.ifcQueue = result.then(() => undefined, () => undefined);
+        return result;
+    }
+
 	loadItemList(items) {
 		LoaderUtils.getFilesFromItemList( items, ( files, filesMap )=>{
-			this.loadFiles( files, filesMap);
+			this.loadFiles(files, filesMap).catch(error => App.log.error("模型导入失败：" + String(error)));
 		} );
 	}
 
@@ -227,6 +251,10 @@ class Loader {
             const extension = filename.split('.').pop().toLowerCase();
 
             const reader = new FileReader();
+            reader.addEventListener('error', () => reject(reader.error), { once: true });
+            const onLoad = (load: (event: ProgressEvent<FileReader>) => Promise<void>) => {
+                reader.addEventListener('load', (event) => load(event).catch(reject), { once: true });
+            };
             // reader.addEventListener( 'progress', function ( event ) {
             // 	const size = '(' + Math.floor( event.total / 1000 ).format() + ' KB)';
             // 	const progress = Math.floor( ( event.loaded / event.total ) * 100 ) + '%';
@@ -291,21 +319,21 @@ class Loader {
 
                     break;
                 case 'dae':
-                    reader.addEventListener('load', async function (event) {
+                    onLoad(async (event) => {
                         const contents = event.target?.result as string;
 
                         const { ColladaLoader } = await import('three/examples/jsm/loaders/ColladaLoader.js');
 
                         const loader = new ColladaLoader(manager);
-                        //@ts-ignore
-                        const collada = loader.parse(contents);
+                        const collada = loader.parse(contents, '');
+                        if (!collada) throw new Error('无法解析 Collada 模型：' + filename);
 
                         collada.scene.name = filename;
 
                         addToScene && App.execute(new AddObjectCommand(collada.scene));
 
                         resolve(collada.scene);
-                    }, false);
+                    });
                     reader.readAsText(file);
 
                     break;
@@ -432,56 +460,17 @@ class Loader {
 
                     break;
                 case 'ifc':
-                    reader.addEventListener('load', async (event) => {
-                        if (!this._ifcLoader) {
-                            const { IFCLoader }  = await import("web-ifc-three/IFCLoader");
-
-                            this._ifcLoader = new IFCLoader();
-
-                            const ifcWorkerUrl = new URL(import.meta.env.BASE_URL + 'libs/web-ifc/IFCWorker.js', import.meta.url).href;
-                            this._ifcLoader.ifcManager.useWebWorkers(true, ifcWorkerUrl).then(async () => {
-                                if(!this._ifcLoader) return;
-
-                                await this._ifcLoader.ifcManager.setWasmPath('/');
-
-                                // const { IFCSPACE } = await import('web-ifc');
-                                // await this._ifcLoader.ifcManager.parser.setupOptionalCategories( {
-                                // 	[ IFCSPACE ]: false,
-                                // });
-
-                                await this._ifcLoader.ifcManager.applyWebIfcConfig({
-                                    // 使用更快的（不那么精确的）布尔逻辑
-                                    USE_FAST_BOOLS: true
-                                });
-                            })
-                        }
-
-
-                        const model = await this._ifcLoader.parse(event.target?.result as ArrayBuffer);
+                    onLoad(async (event) => {
+                        const model = await this.parseIFC(event.target?.result as ArrayBuffer);
                         model.name = filename;
-                        model.isIFC = true;
+                        Object.assign(model, { isIFC: true });
                         addToScene && App.execute(new AddObjectCommand(model));
 
                         resolve(model);
-                    }, false);
+                    });
                     reader.readAsArrayBuffer(file);
 
                     break;
-                // case 'ifc':
-                // 	reader.addEventListener( 'load', async function ( event ) {
-                // 		const { IFCLoader } = await import( 'three/examples/jsm/loaders/IFCLoader.js' );
-                //
-                // 		const loader = new IFCLoader();
-                // 		loader.ifcManager.setWasmPath( 'three/examples/jsm/loaders/ifc/' );
-                //
-                // 		// @ts-ignore
-                // 		const model = await loader.parse( event.target.result );
-                // 		model.mesh.name = filename;
-                //
-                // 		App.execute( new AddObjectCommand(model.mesh));
-                // 	}, false );
-                // 	reader.readAsArrayBuffer( file );
-                // 	break;
                 case 'kmz':
                     reader.addEventListener('load', async function (event) {
                         const { KMZLoader } = await import('three/examples/jsm/loaders/KMZLoader.js');
@@ -497,22 +486,23 @@ class Loader {
                     break;
                 case 'ldr':
                 case 'mpd':
-                    reader.addEventListener('load', async function (event) {
+                    onLoad(async (event) => {
                         const { LDrawLoader } = await import('three/examples/jsm/loaders/LDrawLoader.js');
+                        const { LDrawConditionalLineMaterial } = await import('three/examples/jsm/materials/LDrawConditionalLineMaterial.js');
 
                         const loader = new LDrawLoader();
-                        loader.setPath('three/examples/models/ldraw/officialLibrary/');
-                        // @ts-ignore
-                        loader.parse(event.target?.result as string, undefined, function (group) {
+                        loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
+                        loader.setPartsLibraryPath('three/examples/models/ldraw/officialLibrary/');
+                        loader.parse(event.target?.result as string, (group) => {
                             group.name = filename;
-                            // Convert from LDraw coordinates: rotate 180 degrees around OX
+                            // 将 LDraw 坐标系绕 X 轴旋转 180 度。
                             group.rotation.x = Math.PI;
 
                             addToScene && App.execute(new AddObjectCommand(group));
 
                             resolve(group);
-                        });
-                    }, false);
+                        }, reject);
+                    });
                     reader.readAsText(file);
                     break;
                 case 'md2':
@@ -579,11 +569,17 @@ class Loader {
 
                     break;
                 case 'ply':
-                    reader.addEventListener('load', async function (event) {
+                    onLoad(async (event) => {
                         const contents = event.target?.result as ArrayBuffer;
                         const { PLYLoader } = await import('three/examples/jsm/loaders/PLYLoader.js');
 
                         const geometry = new PLYLoader().parse(contents);
+                        // 保持 PLY 顶点属性为单精度浮点，供 WebGL 和光追几何合并共用。
+                        for (const [name, attribute] of Object.entries(geometry.attributes)) {
+                            if (!(attribute.array instanceof Float32Array)) {
+                                geometry.setAttribute(name, new THREE.Float32BufferAttribute(attribute.array, attribute.itemSize));
+                            }
+                        }
                         let object;
 
                         if (geometry.index !== null) {
@@ -602,7 +598,7 @@ class Loader {
                         addToScene && App.execute(new AddObjectCommand(object));
 
                         resolve(object);
-                    }, false);
+                    });
                     reader.readAsArrayBuffer(file);
                     break;
                 case 'stl':
@@ -630,7 +626,7 @@ class Loader {
 
                     break;
                 case 'svg':
-                    reader.addEventListener('load', async function (event) {
+                    onLoad(async (event) => {
                         const contents = event.target?.result as string;
                         const { SVGLoader } = await import('three/examples/jsm/loaders/SVGLoader.js');
 
@@ -649,7 +645,7 @@ class Loader {
                                 depthWrite: false
                             });
 
-                            const shapes = SVGLoader.createShapes(path);
+                            const shapes = path.toShapes();
 
                             for (let j = 0; j < shapes.length; j++) {
                                 const shape = shapes[j];
@@ -664,47 +660,50 @@ class Loader {
                         addToScene && App.execute(new AddObjectCommand(group));
 
                         resolve(group);
-                    }, false);
+                    });
                     reader.readAsText(file);
 
                     break;
                 case 'usdz':
-                    reader.addEventListener('load', async function (event) {
+                    onLoad(async (event) => {
                         const contents = event.target?.result as ArrayBuffer;
 
-                        const { USDZLoader } = await import('three/examples/jsm/loaders/USDZLoader.js');
+                        const { USDLoader } = await import('three/examples/jsm/loaders/USDLoader.js');
 
-                        const group = new USDZLoader().parse(contents);
+                        const group = new USDLoader().parse(contents);
                         group.name = filename;
 
                         addToScene && App.execute(new AddObjectCommand(group));
 
                         resolve(group);
-                    }, false);
+                    });
                     reader.readAsArrayBuffer(file);
                     break;
                 case 'vox':
-                    reader.addEventListener('load', async function (event) {
+                    onLoad(async (event) => {
                         const contents = event.target?.result as ArrayBuffer;
-                        const { VOXLoader, VOXMesh } = await import('three/examples/jsm/loaders/VOXLoader.js');
+                        const { VOXLoader, buildMesh } = await import('three/examples/jsm/loaders/VOXLoader.js');
 
-                        const chunks = new VOXLoader().parse(contents);
+                        const { chunks, scene } = new VOXLoader().parse(contents);
 
                         const group = new THREE.Group();
                         group.name = filename;
 
-                        for (let i = 0; i < chunks.length; i++) {
-                            const chunk: any = chunks[i];
-
-                            const mesh = new VOXMesh(chunk);
-                            // @ts-ignore
-                            group.add(mesh);
+                        if (scene) {
+                            group.add(scene);
+                        } else {
+                            for (const chunk of chunks) {
+                                const mesh = buildMesh(chunk);
+                                // 无场景节点的旧文件沿用 r176 导入时的原点。
+                                mesh.geometry.translate(0, 0, 1);
+                                group.add(mesh);
+                            }
                         }
 
                         addToScene && App.execute(new AddObjectCommand(group));
 
                         resolve(group);
-                    }, false);
+                    });
                     reader.readAsArrayBuffer(file);
                     break;
                 case 'vtk':
@@ -922,48 +921,58 @@ class Loader {
 		loader.setDRACOLoader(this.dracoLoader);
 		loader.setKTX2Loader(this.ktx2Loader);
 		// KTX2Loader 会把源文件转码成运行时 CompressedTexture，Package 需要额外保留原始 KTX2 二进制
-		loader.register((parser: any) => ({
-			name: "KHR_texture_basisu",
-			loadTexture(textureIndex: number) {
-				const json = parser.json;
-				const textureDef = json.textures?.[textureIndex];
-				const extension = textureDef?.extensions?.KHR_texture_basisu;
-				if (!extension) return null;
+		loader.register((parser: any) => {
+			const originalKTX2 = new Map<number | string, Promise<ArrayBuffer>>();
+			return {
+				name: "KHR_texture_basisu",
+				loadTexture(textureIndex: number) {
+					const json = parser.json;
+					const textureDef = json.textures?.[textureIndex];
+					const extension = textureDef?.extensions?.KHR_texture_basisu;
+					if (!extension) return null;
 
-				const ktx2Loader = parser.options.ktx2Loader;
-				if (!ktx2Loader) {
-					if (json.extensionsRequired?.includes("KHR_texture_basisu")) {
-						throw new Error("THREE.GLTFLoader: setKTX2Loader must be called before loading KTX2 textures");
+					const ktx2Loader = parser.options.ktx2Loader;
+					if (!ktx2Loader) {
+						if (json.extensionsRequired?.includes("KHR_texture_basisu")) {
+							throw new Error("THREE.GLTFLoader: setKTX2Loader must be called before loading KTX2 textures");
+						}
+
+						return null;
 					}
 
-					return null;
-				}
+					const sourceIndex = extension.source;
+					const sourceDef = json.images?.[sourceIndex];
+					if (!sourceDef) return null;
+					if (sourceDef.bufferView === undefined && sourceDef.uri === undefined) {
+						throw new Error(`THREE.GLTFLoader: Image ${sourceIndex} is missing URI and bufferView`);
+					}
 
-				const sourceIndex = extension.source;
-				const sourceDef = json.images?.[sourceIndex];
-				if (!sourceDef) return null;
-				if (sourceDef.bufferView === undefined && sourceDef.uri === undefined) {
-					throw new Error(`THREE.GLTFLoader: Image ${sourceIndex} is missing URI and bufferView`);
-				}
+					const key = sourceDef.bufferView ?? sourceDef.uri;
+					let originalBuffer = originalKTX2.get(key);
+					if (!originalBuffer) {
+						const source: Promise<ArrayBuffer> = sourceDef.bufferView !== undefined
+							? parser.getDependency("bufferView", sourceDef.bufferView)
+							: parser.fileLoader.loadAsync(THREE.LoaderUtils.resolveURL(sourceDef.uri, parser.options.path));
+						// 转码 Worker 会接管输入缓冲，场景归档保留独立副本供共享源贴图使用。
+						originalBuffer = source.then(buffer => buffer.slice(0));
+						originalKTX2.set(key, originalBuffer);
+					}
 
-				const ktx2BufferPromise: Promise<ArrayBuffer> = sourceDef.bufferView !== undefined
-					? parser.getDependency("bufferView", sourceDef.bufferView)
-					: parser.fileLoader.loadAsync(THREE.LoaderUtils.resolveURL(sourceDef.uri, parser.options.path));
+					const texturePromise: Promise<THREE.Texture | null> = parser.loadTextureImage(textureIndex, sourceIndex, ktx2Loader);
+					return Promise.all([texturePromise, originalBuffer]).then(([texture, ktx2Buffer]) => {
+						if (!texture) throw new Error("无法载入 KTX2 贴图：" + sourceIndex);
 
-				return parser.loadTextureImage(textureIndex, sourceIndex, ktx2Loader).then(async (texture: THREE.Texture | null) => {
-					const ktx2Buffer = await ktx2BufferPromise;
-					if (!texture) return texture;
+						const source = texture.source as ITHREEScene.KTX2TextureSource;
+						source.__astralPackageKTX2 = {
+							buffer: ktx2Buffer,
+							mimeType: sourceDef.mimeType || "image/ktx2",
+						};
 
-					const source = texture.source as ITHREEScene.KTX2TextureSource;
-					source.__astralPackageKTX2 = {
-						buffer: ktx2Buffer,
-						mimeType: sourceDef.mimeType || "image/ktx2",
-					};
-
-					return texture;
-				});
-			},
-		}));
+						return texture;
+					});
+				},
+			};
+		});
 		loader.setMeshoptDecoder(MeshoptDecoder);
 
 		return loader;
@@ -996,10 +1005,10 @@ class Loader {
 	loadUrlTexture(extension: string, url: string, onload?: (tex: THREE.Texture) => void,onerror?: (err: any) => void) {
 		switch (extension) {
 			case 'hdr': {
-                if(!this.rgbeLoader) this.rgbeLoader = new RGBELoader();
+                if(!this.hdrLoader) this.hdrLoader = new HDRLoader();
 
-                this.rgbeLoader.setDataType(THREE.HalfFloatType);
-				return this.rgbeLoader.load(url, (hdrTexture) => {
+                this.hdrLoader.setDataType(THREE.HalfFloatType);
+				return this.hdrLoader.load(url, (hdrTexture) => {
                     hdrTexture.wrapS = THREE.RepeatWrapping;
                     hdrTexture.wrapT = THREE.RepeatWrapping;
                     hdrTexture.needsUpdate = true;

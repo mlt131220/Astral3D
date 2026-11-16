@@ -71921,16 +71921,8 @@ var Log = class {
 Log.logLevel = 1;
 
 // dist/web-ifc-api.ts
-var WebIFCWasm;
-if (typeof self !== "undefined" && self.crossOriginIsolated) {
-  try {
-    WebIFCWasm = require_web_ifc_mt();
-  } catch (ex) {
-    WebIFCWasm = require_web_ifc();
-  }
-} else {
-  WebIFCWasm = require_web_ifc();
-}
+// IFC 解析已在 Worker 中执行。固定使用随 SDK 发布的单线程 WASM，避免依赖旧版 web-ifc 未提供的 pthread 脚本。
+var WebIFCWasm = require_web_ifc();
 var STRING = 1;
 var IfcAPI2 = class {
   constructor() {
@@ -71987,8 +71979,14 @@ var IfcAPI2 = class {
       dest.set(src);
       return srcSize;
     });
-    this.modelSchemaList[result] = SchemaNames.indexOf(this.GetHeaderLine(result, FILE_SCHEMA).arguments[0][0].value);
-    Log.info("Parsing Model using " + this.GetHeaderLine(result, FILE_SCHEMA).arguments[0][0].value + " Schema");
+    const schemaName = this.GetHeaderLine(result, FILE_SCHEMA)?.arguments?.[0]?.[0]?.value;
+    const schema = SchemaNames.indexOf(schemaName);
+    if (schema < 0) {
+      if (result >= 0 && this.IsModelOpen(result)) this.CloseModel(result);
+      throw new Error("IFC 文件的 FILE_SCHEMA 缺失或不受支持");
+    }
+    this.modelSchemaList[result] = schema;
+    Log.info("Parsing Model using " + schemaName + " Schema");
     return result;
   }
   GetModelSchema(modelID) {
@@ -73320,11 +73318,19 @@ class IFCParser {
         if (this.state.api.wasmModule === undefined)
             await this.state.api.Init();
         await this.newIfcModel(buffer);
-        this.loadedModels++;
-        if (coordinationMatrix) {
-            await this.state.api.SetGeometryTransformation(this.currentWebIfcID, coordinationMatrix);
+        try {
+            if (coordinationMatrix) {
+                await this.state.api.SetGeometryTransformation(this.currentWebIfcID, coordinationMatrix);
+            }
+            const model = await this.loadAllGeometry(this.currentWebIfcID);
+            this.loadedModels++;
+            return model;
+        } catch (error) {
+            this.cleanUpGeometryMemory([]);
+            this.state.api.CloseModel(this.currentWebIfcID);
+            delete this.state.models[this.currentModelID];
+            throw error;
         }
-        return this.loadAllGeometry(this.currentWebIfcID);
     }
     getAndClearErrors(_modelId) {
     }
@@ -73361,9 +73367,13 @@ class IFCParser {
         });
         const combinedGeometry = mergeBufferGeometries(geometries, true);
         this.cleanUpGeometryMemory(geometries);
+        if (!combinedGeometry)
+            throw new Error("IFC 文件没有可导入的几何");
         if (this.BVH)
             this.BVH.applyThreeMeshBVH(combinedGeometry);
         const model = new IFCModel(combinedGeometry, materials);
+        // 失败的文件也可能消耗 WASM 模型编号，属性查询须使用解析器分配的编号。
+        model.modelID = this.currentModelID;
         this.state.models[this.currentModelID].mesh = model;
         return model;
     }
@@ -73472,66 +73482,10 @@ class IFCParser {
     }
 }
 
-var DBOperation;
-(function (DBOperation) {
-    DBOperation[DBOperation["transferIfcModel"] = 0] = "transferIfcModel";
-    DBOperation[DBOperation["transferIndividualItems"] = 1] = "transferIndividualItems";
-})(DBOperation || (DBOperation = {}));
-class IndexedDatabase {
-    async save(item, id) {
-        const open = IndexedDatabase.openOrCreateDB(id);
-        this.createSchema(open, id);
-        return new Promise((resolve, reject) => {
-            open.onsuccess = () => this.saveItem(item, open, id, resolve);
-        });
-    }
-    async load(id) {
-        const open = IndexedDatabase.openOrCreateDB(id);
-        return new Promise((resolve, reject) => {
-            open.onsuccess = () => this.loadItem(open, id, resolve);
-        });
-    }
-    createSchema(open, id) {
-        open.onupgradeneeded = function () {
-            const db = open.result;
-            db.createObjectStore(id.toString(), { keyPath: "id" });
-        };
-    }
-    saveItem(item, open, id, resolve) {
-        const { db, tx, store } = IndexedDatabase.getDBItems(open, id);
-        item.id = id;
-        store.put(item);
-        tx.oncomplete = () => IndexedDatabase.closeDB(db, tx, resolve);
-    }
-    loadItem(open, id, resolve) {
-        const { db, tx, store } = IndexedDatabase.getDBItems(open, id);
-        const item = store.get(id);
-        const callback = () => {
-            delete item.result.id;
-            resolve(item.result);
-        };
-        tx.oncomplete = () => IndexedDatabase.closeDB(db, tx, callback);
-    }
-    static getDBItems(open, id) {
-        const db = open.result;
-        const tx = db.transaction(id.toString(), "readwrite");
-        const store = tx.objectStore(id.toString());
-        return { db, tx, store };
-    }
-    static openOrCreateDB(id) {
-        return indexedDB.open(id.toString(), 1);
-    }
-    static closeDB(db, tx, resolve) {
-        db.close();
-        resolve("success");
-    }
-}
-
 class ParserWorker {
-    constructor(worker, serializer, IDB) {
+    constructor(worker, serializer) {
         this.worker = worker;
         this.serializer = serializer;
-        this.IDB = IDB;
         this.API = WorkerAPIs.parser;
     }
     initializeParser() {
@@ -73552,23 +73506,23 @@ class ParserWorker {
         this.initializeParser();
         if (this.parser === undefined)
             throw new Error(ErrorParserNotAvailable);
-        if (this.worker.state)
-            this.worker.state.onProgress = (event) => this.onProgress(event, data);
-        const serializedIfcModel = await this.getResponse(data);
-        await this.IDB.save(serializedIfcModel, DBOperation.transferIfcModel);
-        this.worker.post(data);
+        const state = this.worker.state;
+        state.onProgress = (event) => this.onProgress(event, data);
+        try {
+            const model = await this.parser.parse(data.args.buffer, data.args.coordinationMatrix);
+            const result = this.serializer.serializeIfcModel(model);
+            this.cleanUpGeometries(model);
+            const { position, normal, expressID, index } = result.geometry;
+            // 几何缓冲随请求直接回传，避免同源标签页共用暂存记录。
+            const buffers = new Set([position.buffer, normal.buffer, expressID.buffer, index.buffer]);
+            buffers.delete(undefined);
+            this.worker.post({ ...data, result }, [...buffers]);
+        } finally {
+            delete state.onProgress;
+        }
     }
     onProgress(event, data) {
         this.worker.post({ ...data, onProgress: true, result: event });
-    }
-    async getResponse(data) {
-        if (!this.parser)
-            throw new Error(ErrorParserNotAvailable);
-        const ifcModel = await this.parser.parse(data.args.buffer, data.args.coordinationMatrix);
-        const serializedIfcModel = this.serializer.serializeIfcModel(ifcModel);
-        this.cleanUpGeometries(ifcModel);
-        data.result = { modelID: ifcModel.modelID };
-        return serializedIfcModel;
     }
     cleanUpGeometries(model) {
         model.geometry.dispose();
@@ -73582,11 +73536,10 @@ class ParserWorker {
 class IFCWorker {
     constructor() {
         this.serializer = new Serializer();
-        this.IDB = new IndexedDatabase();
         this.workerState = new StateWorker(this);
         this.webIfc = new WebIfcWorker(this, this.serializer);
         this.properties = new PropertyWorker(this);
-        this.parser = new ParserWorker(this, this.serializer, this.IDB);
+        this.parser = new ParserWorker(this, this.serializer);
     }
     initializeAPI(api) {
         this.state = {
@@ -73596,8 +73549,8 @@ class IFCWorker {
             worker: { active: false, path: '' }
         };
     }
-    post(data) {
-        self.postMessage(data);
+    post({ id, action, result, onProgress }, transfer = []) {
+        self.postMessage({ id, action, result, onProgress }, transfer);
     }
     postCallback(data, result, serializer) {
         data.result = serializer ? serializer(result) : result;
@@ -73608,9 +73561,12 @@ const ifcWorker = new IFCWorker();
 self.onmessage = async (event) => {
     const data = event.data;
     const { worker, action } = data;
-    checkRequestIsValid(worker, action);
-    const requestedWorker = ifcWorker[worker];
-    requestedWorker[action](data);
+    try {
+        checkRequestIsValid(worker, action);
+        await ifcWorker[worker][action](data);
+    } catch (error) {
+        self.postMessage({ id: data.id, action, error: error instanceof Error ? error.message : String(error) });
+    }
 };
 function checkRequestIsValid(worker, action) {
     if (!ifcWorker[worker]) {
@@ -73621,4 +73577,3 @@ function checkRequestIsValid(worker, action) {
         throw new Error(`The action ${action} does not exist in the worker ${worker}.`);
     }
 }
-//# sourceMappingURL=IFCWorker.js.map

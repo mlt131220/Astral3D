@@ -3,7 +3,7 @@ import {ref, onMounted, watch,nextTick} from "vue";
 import type {UploadFileInfo} from 'naive-ui';
 import * as THREE from 'three';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import { Loader } from "@astral3d/engine";
 
 const props = withDefaults(defineProps<{
@@ -113,7 +113,7 @@ function loadFile(file) {
   } else if (extension === 'hdr' || extension === 'pic') {
     reader.addEventListener('load', function (event) {
       // 假设RGBE/Radiance HDR图像格式
-      const loader = new RGBELoader();
+      const loader = new HDRLoader();
       loader.load(event.target?.result as string, function (hdrTexture) {
         // @ts-ignore
         hdrTexture.sourceFile = file.name;

@@ -8,6 +8,7 @@ import * as THREE from 'three';
 // 原生three的扩展
 import '../expansion';
 import Logger from "@/utils/log/Logger";
+import { normalizeMaterialBlending } from "@/utils/scene/blending";
 import { Config, Storage, Project, Selector, History as _History, Resource, CSM } from "./modules";
 import { AnimationManager } from "../animation/AnimationManager";
 import { useAddSignal, useDispatchSignal, useSetSignalActive } from '@/hooks';
@@ -372,6 +373,7 @@ export class App {
      * @param material
      */
     addMaterialToRefCounter(material: THREE.Material) {
+        normalizeMaterialBlending(material);
         let materialsRefCounter = this.materialsRefCounter;
         let count = materialsRefCounter.get(material);
 
@@ -558,6 +560,7 @@ export class App {
      * @param newMaterial
      */
     setObjectMaterial(object: THREE.Object3D, slot: number | undefined, newMaterial: THREE.Material) {
+        normalizeMaterialBlending(newMaterial);
         if (Array.isArray(object.material) && slot !== undefined) {
             object.material[slot] = newMaterial;
         } else {
@@ -795,6 +798,7 @@ export class App {
             properties && Object.keys(properties).forEach(key => {
                 material[key] = properties[key];
             });
+            normalizeMaterialBlending(material);
 
             const num = new Proxy({ value: 10 }, {
                 set(target: { value: number }, p: string | symbol, newValue: any): boolean {

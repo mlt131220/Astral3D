@@ -22,7 +22,7 @@ export const defaultProjectInfo = (): IAppProject.Info => ({
         toneMappingExposure: 1,
         shadow: {
             enabled: true,
-            type: THREE.PCFSoftShadowMap,
+            type: THREE.PCFShadowMap,
         },
     },
     // 级联阴影映射
@@ -245,6 +245,11 @@ class Project {
 
                 obj = obj[keys[i]];
             }
+        }
+
+        // 旧场景包保存的 PCF Soft 在 r187 由 PCF 接替。
+        if (keys[0] === "renderer" && this.info.renderer.shadow.type === THREE.PCFSoftShadowMap) {
+            this.info.renderer.shadow.type = THREE.PCFShadowMap;
         }
 
         /* 执行相应处理 */

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {ref, reactive,watch,onMounted, onUnmounted, nextTick, toRaw} from "vue";
 import * as THREE from "three";
-import {App,Hooks,SetMaterialMapCommand,SetMaterialValueCommand,SetMaterialVectorCommand,SetMaterialRangeCommand} from "@astral3d/engine";
+import {App,Hooks,SetMaterialMapCommand,SetMaterialValueCommand,SetMaterialVectorCommand} from "@astral3d/engine";
 import {SettingsAdjust} from "@vicons/carbon";
 import EsInputNumber from '@/components/es/EsInputNumber.vue';
 import EsTexture from '@/components/es/EsTexture.vue';
@@ -118,9 +118,10 @@ async function update() {
       scaleY.value = material[`${mapType}Scale`]?.y;
     }
 
-    if (material[`${mapType}Range`]?.[0] !== undefined) {
-      rangeMin.value = material[`${mapType}Range`][0];
-      rangeMax.value = material[`${mapType}Range`][1];
+    if (props.property === 'iridescenceThicknessMap') {
+      const physicalMaterial = material as THREE.MeshPhysicalMaterial;
+      rangeMin.value = physicalMaterial.iridescenceThicknessMinimum;
+      rangeMax.value = physicalMaterial.iridescenceThicknessMaximum;
     }
 
     show.value = true;
@@ -205,11 +206,9 @@ function onScaleXYChange() {
   }
 }
 
-function onRangeChange() {
-  const value = [rangeMin.value, rangeMax.value];
-
-  if (material[`${mapType}Range`][0] !== value[0] || material[`${mapType}Range`][1] !== value[1]) {
-      App.execute(new SetMaterialRangeCommand(object, `${mapType}Range`, value[0], value[1], currentMaterialSlot));
+function onThicknessChange(property: 'iridescenceThicknessMinimum' | 'iridescenceThicknessMaximum', value: number) {
+  if (material[property] !== value) {
+    App.execute(new SetMaterialValueCommand(object, property, value, currentMaterialSlot));
   }
 }
 </script>
@@ -289,7 +288,7 @@ function onRangeChange() {
               <span>min:</span>
               <div>
                 <EsInputNumber v-model:value="rangeMin" size="tiny" :show-button="false" :min="0"
-                               :max="Infinity" :step="10" @change="onRangeChange"/>
+                               :max="Infinity" :step="10" @change="onThicknessChange('iridescenceThicknessMinimum', rangeMin)"/>
                 <span>nm</span>
               </div>
             </div>
@@ -297,7 +296,7 @@ function onRangeChange() {
               <span>max:</span>
               <div>
                 <EsInputNumber v-model:value="rangeMax" size="tiny" :show-button="false" :min="0"
-                               :max="Infinity" :step="10" @change="onRangeChange"/>
+                               :max="Infinity" :step="10" @change="onThicknessChange('iridescenceThicknessMaximum', rangeMax)"/>
                 <span>nm</span>
               </div>
             </div>

@@ -66,7 +66,9 @@ export default defineConfig(async ({mode, command}) => {
         // 路径别名
         resolve: {
             alias: {
-                '@': resolve(__dirname, './lib')
+                '@': resolve(__dirname, './lib'),
+                // TTFLoader 的 CDN 导入随 SDK 和 DXF Worker 一起打包，离线绘制也能加载字体。
+                'https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/+esm': 'opentype.js'
             },
             extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
         },

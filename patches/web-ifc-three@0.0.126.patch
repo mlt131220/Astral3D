@@ -1,0 +1,219 @@
+diff --git a/IFCLoader.js b/IFCLoader.js
+index 8900ff1b5c864d1f729c6031a4e13135cb23a3da..d7136a7ce55f1afd8eed1c1f853ab06c819a075c 100644
+--- a/IFCLoader.js
++++ b/IFCLoader.js
+@@ -1882,84 +1882,12 @@ class WorkerStateHandler {
+ 
+ }
+ 
+-var DBOperation;
+-(function(DBOperation) {
+-  DBOperation[DBOperation["transferIfcModel"] = 0] = "transferIfcModel";
+-  DBOperation[DBOperation["transferIndividualItems"] = 1] = "transferIndividualItems";
+-})(DBOperation || (DBOperation = {}));
+-
+-class IndexedDatabase {
+-
+-  async save(item, id) {
+-    const open = IndexedDatabase.openOrCreateDB(id);
+-    this.createSchema(open, id);
+-    return new Promise((resolve, reject) => {
+-      open.onsuccess = () => this.saveItem(item, open, id, resolve);
+-    });
+-  }
+-
+-  async load(id) {
+-    const open = IndexedDatabase.openOrCreateDB(id);
+-    return new Promise((resolve, reject) => {
+-      open.onsuccess = () => this.loadItem(open, id, resolve);
+-    });
+-  }
+-
+-  createSchema(open, id) {
+-    open.onupgradeneeded = function() {
+-      const db = open.result;
+-      db.createObjectStore(id.toString(), {
+-        keyPath: "id"
+-      });
+-    };
+-  }
+-
+-  saveItem(item, open, id, resolve) {
+-    const {db, tx, store} = IndexedDatabase.getDBItems(open, id);
+-    item.id = id;
+-    store.put(item);
+-    tx.oncomplete = () => IndexedDatabase.closeDB(db, tx, resolve);
+-  }
+-
+-  loadItem(open, id, resolve) {
+-    const {db, tx, store} = IndexedDatabase.getDBItems(open, id);
+-    const item = store.get(id);
+-    const callback = () => {
+-      delete item.result.id;
+-      resolve(item.result);
+-    };
+-    tx.oncomplete = () => IndexedDatabase.closeDB(db, tx, callback);
+-  }
+-
+-  static getDBItems(open, id) {
+-    const db = open.result;
+-    const tx = db.transaction(id.toString(), "readwrite");
+-    const store = tx.objectStore(id.toString());
+-    return {
+-      db,
+-      tx,
+-      store
+-    };
+-  }
+-
+-  static openOrCreateDB(id) {
+-    return indexedDB.open(id.toString(), 1);
+-  }
+-
+-  static closeDB(db, tx, resolve) {
+-    db.close();
+-    resolve("success");
+-  }
+-
+-}
+-
+ class ParserHandler {
+ 
+-  constructor(handler, serializer, BVH, IDB) {
++  constructor(handler, serializer, BVH) {
+     this.handler = handler;
+     this.serializer = serializer;
+     this.BVH = BVH;
+-    this.IDB = IDB;
+     this.optionalCategories = {
+       [IFCSPACE]: true,
+       [IFCOPENINGELEMENT]: false
+@@ -1979,10 +1907,7 @@ class ParserHandler {
+       if (this.handler.state.onProgress)
+         this.handler.state.onProgress(progress);
+     };
+-    this.handler.serializeHandlers[this.handler.requestID] = async (result) => {
+-      this.updateState(result.modelID);
+-      return this.getModel();
+-    };
++    this.handler.serializeHandlers[this.handler.requestID] = (result) => this.getModel(result);
+     return this.handler.request(this.API, WorkerActions.parse, {
+       buffer,
+       coordinationMatrix
+@@ -1991,20 +1916,15 @@ class ParserHandler {
+ 
+   getAndClearErrors(_modelId) {}
+ 
+-  updateState(modelID) {
+-    this.handler.state.models[modelID] = {
+-      modelID: modelID,
+-      mesh: {},
++  getModel(serializedModel) {
++    const model = this.serializer.reconstructIfcModel(serializedModel);
++    this.BVH.applyThreeMeshBVH(model.geometry);
++    this.handler.state.models[model.modelID] = {
++      modelID: model.modelID,
++      mesh: model,
+       types: {},
+       jsonData: {}
+     };
+-  }
+-
+-  async getModel() {
+-    const serializedModel = await this.IDB.load(DBOperation.transferIfcModel);
+-    const model = this.serializer.reconstructIfcModel(serializedModel);
+-    this.BVH.applyThreeMeshBVH(model.geometry);
+-    this.handler.state.models[model.modelID].mesh = model;
+     return model;
+   }
+ 
+@@ -2022,17 +1942,22 @@ class IFCWorkerHandler {
+     this.callbackHandlers = {};
+     this.onprogressHandlers = {};
+     this.serializer = new Serializer();
+-    this.IDB = new IndexedDatabase();
+     this.workerPath = this.state.worker.path;
+     this.ifcWorker = new Worker(this.workerPath);
+     this.ifcWorker.onmessage = (data) => this.handleResponse(data);
++    this.ifcWorker.onerror = (event) => this.fail(new Error(event.message || "IFC Worker 加载或运行失败"));
++    this.ifcWorker.onmessageerror = () => this.fail(new Error("无法读取 IFC Worker 响应"));
+     this.properties = new PropertyHandler(this);
+-    this.parser = new ParserHandler(this, this.serializer, this.BVH, this.IDB);
++    this.parser = new ParserHandler(this, this.serializer, this.BVH);
+     this.webIfc = new WebIfcHandler(this, this.serializer);
+     this.workerState = new WorkerStateHandler(this);
+   }
+ 
+   request(worker, action, args) {
++    if (this.failure) {
++      this.clearHandlers(this.requestID);
++      return Promise.reject(this.failure);
++    }
+     const data = {
+       worker,
+       action,
+@@ -2045,7 +1970,12 @@ class IFCWorkerHandler {
+       this.resolveHandlers[this.requestID] = resolve;
+       this.rejectHandlers[this.requestID] = reject;
+       this.requestID++;
+-      this.ifcWorker.postMessage(data);
++      try {
++        this.ifcWorker.postMessage(data);
++      } catch (error) {
++        this.clearHandlers(data.id);
++        reject(error);
++      }
+     });
+   }
+ 
+@@ -2061,18 +1991,38 @@ class IFCWorkerHandler {
+ 
+   handleResponse(event) {
+     const data = event.data;
++    if (!this.resolveHandlers[data.id])
++      return;
+     if (data.onProgress) {
+       this.resolveOnProgress(data);
+       return;
+     }
+     this.callHandlers(data);
+-    delete this.resolveHandlers[data.id];
+-    delete this.rejectHandlers[data.id];
+-    delete this.onprogressHandlers[data.id];
++    this.clearHandlers(data.id);
++  }
++
++  fail(error) {
++    this.failure = error;
++    this.state.worker.active = false;
++    this.ifcWorker.terminate();
++    for (const id of Object.keys(this.rejectHandlers)) {
++      this.rejectHandlers[id](error);
++      this.clearHandlers(id);
++    }
++  }
++
++  clearHandlers(id) {
++    delete this.resolveHandlers[id];
++    delete this.rejectHandlers[id];
++    delete this.onprogressHandlers[id];
++    delete this.serializeHandlers[id];
++    delete this.callbackHandlers[id];
+   }
+ 
+   callHandlers(data) {
+     try {
++      if (data.error !== undefined)
++        throw new Error(data.error);
+       this.resolveSerializations(data);
+       this.resolveCallbacks(data);
+       this.resolveHandlers[data.id](data.result);
+@@ -2418,7 +2368,7 @@ class IFCManager {
+   }
+ 
+   async setWasmPath(path) {
+-    this.state.api.SetWasmPath(path);
++    await this.state.api.SetWasmPath(path);
+     this.state.wasmPath = path;
+   }
+ 

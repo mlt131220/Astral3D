@@ -18,8 +18,8 @@
               <p class="py-2">{{ item }}</p>
             </template>
 
-            <n-descriptions-item v-if="typeof info[item] === 'number'" :label="item">
-              {{ info[item] }}
+            <n-descriptions-item v-if="info[item] == null || typeof info[item] !== 'object'" :label="item">
+              {{ info[item] ?? '-' }}
             </n-descriptions-item>
 
             <n-descriptions-item v-else v-for="(k,i) in Object.keys(info[item])" :key="i" :label="k">

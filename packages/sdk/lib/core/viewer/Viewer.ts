@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import CameraControls from 'camera-controls';
-import {Timer} from 'three/examples/jsm/misc/Timer.js';
 import {CSS2DRenderer} from "three/examples/jsm/renderers/CSS2DRenderer";
 import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import {TransformControls} from "three/examples/jsm/controls/TransformControls.js";
@@ -186,7 +185,7 @@ export default class Viewer extends THREE.EventDispatcher<ViewerEventMap> {
 
 	public css2DRenderer: CSS2DRenderer = new CSS2DRenderer();
 	public css3DRenderer: CSS3DRenderer = new CSS3DRenderer();
-	public timer = new Timer();
+	public timer = new THREE.Timer();
 	//整个主场景的box3
 	public sceneBox3 = new THREE.Box3();
 

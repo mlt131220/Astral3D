@@ -10,13 +10,17 @@ const props = withDefaults(defineProps<{
   property: string,
   name: string,
   range?: Array<number>,
-  decimal?: number
+  decimal?: number,
+  step?: number,
+  unit?: string,
+  keyframe?: boolean
 }>(), {
   property: "",
   name: "",
   //@ts-ignore
   range: [-Infinity, Infinity],
-  decimal: 0
+  decimal: 0,
+  keyframe: true
 })
 
 const show = ref(false);
@@ -69,11 +73,12 @@ function onChange() {
 
 <template>
     <div id="sider-scene-material-color-property" v-if="show">
-        <!-- <span>{{ t(`layout.sider.material.${name}`) }}</span> -->
-        <EsKeyFrame :label="t(`layout.sider.material.${name}`)" :attr="`material.${property}`" />
+        <EsKeyFrame v-if="keyframe" :label="t(`layout.sider.material.${name}`)" :attr="`material.${property}`" />
+        <span v-else>{{ t(`layout.sider.material.${name}`) }}</span>
         <div>
             <EsInputNumber v-model:value="numberValue" size="tiny" :show-button="false" :min="range[0]" :max="range[1]"
-                :decimal="decimal" @change="onChange" />
+                :decimal="decimal" :step="step" @change="onChange" />
+            <span v-if="unit">{{ unit }}</span>
         </div>
     </div>
 </template>

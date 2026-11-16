@@ -30,7 +30,7 @@ declare namespace ITHREEScene {
     }
 
     /**
-     * Package 保存 KTX2 纹理时挂在 THREE.Source 上的原始二进制
+     * Package 保存 KTX2 纹理时挂在 THREE.TextureSource 上的原始二进制
      */
     interface KTX2SourceData {
         buffer: ArrayBuffer;
@@ -38,9 +38,9 @@ declare namespace ITHREEScene {
     }
 
     /**
-     * 带有 Package KTX2 原始资源引用的 THREE.Source
+     * 带有 Package KTX2 原始资源引用的 THREE.TextureSource
      */
-    interface KTX2TextureSource extends import("three").Source {
+    interface KTX2TextureSource extends import("three").TextureSource {
         uuid: string;
         __astralPackageKTX2?: KTX2SourceData;
         // Package 解包阶段临时持有的 KTX2 转码结果，只用于构建最终 Texture

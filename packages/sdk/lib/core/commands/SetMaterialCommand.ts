@@ -1,6 +1,7 @@
 import { Command } from './Command';
 import { ObjectLoader } from '../loader/ObjectLoader';
 import {useDispatchSignal} from "@/hooks";
+import { serializeMaterial } from "@/utils/scene/blending";
 import App from "../app/App";
 
 /**
@@ -40,8 +41,8 @@ class SetMaterialCommand extends Command {
 	toJSON() {
 		const output = super.toJSON();
 		output.objectUuid = this.object.uuid;
-		output.oldMaterial = this.oldMaterial.toJSON();
-		output.newMaterial = this.newMaterial.toJSON();
+		output.oldMaterial = serializeMaterial(this.oldMaterial);
+		output.newMaterial = serializeMaterial(this.newMaterial);
 		return output;
 	}
 

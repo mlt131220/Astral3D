@@ -56,9 +56,9 @@ export const getDefaultBillboardOptions = () => ({
         // 内边距
         padding: 0,
         // 对齐方式, left, center, right
-        align: "center",
+        align: "center" as CanvasTextAlign,
         // 文本基线, top, middle, bottom,alphabetic,hanging,ideographic
-        baseline: "top",
+        baseline: "top" as CanvasTextBaseline,
         // 描边宽度
         strokeWidth: 0,
         // 描边颜色
@@ -83,7 +83,7 @@ export default class Billboard extends THREE.Sprite<BillboardEventMap> {
 
         this.name = this.options.name;
 
-        const texture = new BillboardTexture(this.options, material ? (material.map?.image) : undefined);
+        const texture = new BillboardTexture(this.options, material?.map?.image);
         texture.colorSpace = THREE.SRGBColorSpace;
 
         if (material) {

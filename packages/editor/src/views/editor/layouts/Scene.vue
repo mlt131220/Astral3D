@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {ref, inject, Ref} from 'vue';
 import {Vector2} from 'three';
-import {Loader} from "@astral3d/engine";
+import {App, Loader} from "@astral3d/engine";
 import {useDragStore} from "@/store/modules/drag";
 import {useGlobalConfigStore} from '@/store/modules/globalConfig';
 import Config from "@/utils/storage/config";
@@ -47,7 +47,7 @@ function sceneDrop(event) {
     //支持文件夹
     Loader.loadItemList(dt.items);
   } else {
-    Loader.loadFiles(dt.files, undefined);
+    Loader.loadFiles(dt.files, undefined).catch(error => App.log.error("模型导入失败：" + String(error)));
   }
 }
 

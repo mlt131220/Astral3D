@@ -8,12 +8,21 @@ import * as THREE from 'three';
 import log from "@/utils/log/Logger";
 import {POSITION} from "@//constant";
 
+const imageSourceTypes = [
+    globalThis.HTMLImageElement, globalThis.SVGImageElement, globalThis.HTMLCanvasElement,
+    globalThis.HTMLVideoElement, globalThis.ImageBitmap, globalThis.OffscreenCanvas, globalThis.VideoFrame,
+];
+
+function isCanvasImageSource(source: unknown): source is CanvasImageSource {
+    return imageSourceTypes.some(type => type && source instanceof type);
+}
+
 export default class BillboardTexture extends THREE.CanvasTexture {
     private options: IBillboard.options;
-    private _img: HTMLImageElement | null = null;
-    private isImgLoading: boolean = false;
+    private _img: CanvasImageSource | null;
+    private loadingImage: HTMLImageElement | null = null;
 
-    constructor(options:IBillboard.options,image?:HTMLImageElement) {
+    constructor(options: IBillboard.options, image?: unknown) {
         super(
             document.createElement('canvas'), // image
             THREE.Texture.DEFAULT_MAPPING, // mapping
@@ -27,16 +36,18 @@ export default class BillboardTexture extends THREE.CanvasTexture {
         )
 
         this.options = options;
+        this._img = !options.image?.url && isCanvasImageSource(image) ? image : null;
         if(this.options.image){
             this.options.image = new Proxy(this.options.image,{
                 set: (target, key, value) => {
                     target[key] = value;
 
-                    if(key === "url" && value){
-                       this.loadImg();
-                    }else{
-                        this.redraw();
+                    if (key === "url") {
+                        this._img = null;
+                        this.loadingImage = null;
+                        this.loadImg();
                     }
+                    this.redraw();
 
                     return true;
                 }
@@ -56,7 +67,7 @@ export default class BillboardTexture extends THREE.CanvasTexture {
 
         this.redraw();
 
-        this.loadImg(image);
+        if (!this._img) this.loadImg();
     }
 
     get lines() {
@@ -71,8 +82,9 @@ export default class BillboardTexture extends THREE.CanvasTexture {
 
     get textWidth(){
         if (this.options.text.visible && this.lines.length) {
-            let canvas = document.createElement('canvas');
-            let context = canvas.getContext('2d') as  CanvasRenderingContext2D;
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            if (!context) return 0;
             context.font = this.font;
             return Math.max(...this.lines.map(text => context.measureText(text).width));
         }
@@ -94,6 +106,10 @@ export default class BillboardTexture extends THREE.CanvasTexture {
         }
     }
 
+    private get hasVisibleImage() {
+        return this.options.image.visible && (this._img !== null || Boolean(this.options.image.url));
+    }
+
     get width(){
         const padding = this.options.text.padding || 0;
         const imageMargin = this.options.image.margin || 0;
@@ -102,7 +118,7 @@ export default class BillboardTexture extends THREE.CanvasTexture {
 
         if(!this.options.text.value || !this.options.text.visible) return imageSize.width;
 
-        if (!this.options.image.url || !this.options.image.visible) return this.textWidth +  padding * 2;
+        if (!this.hasVisibleImage) return this.textWidth + padding * 2;
 
         let width = padding * 2;
         switch (this.options.image.position?.toLowerCase()) {
@@ -134,7 +150,7 @@ export default class BillboardTexture extends THREE.CanvasTexture {
 
         if(!this.options.text.value || !this.options.text.visible) return imageSize.height;
 
-        if (!this.options.image.url || !this.options.image.visible) return padding * 2 + this.textHeight;
+        if (!this.hasVisibleImage) return padding * 2 + this.textHeight;
 
         let height = padding * 2;
 
@@ -150,61 +166,28 @@ export default class BillboardTexture extends THREE.CanvasTexture {
         return height;
     }
 
-    async loadImg(image?:HTMLImageElement){
-        if(this.isImgLoading) return;
+    private loadImg() {
+        const url = this.options.image?.url;
+        if (!url || this.loadingImage) return;
 
-        if(image){
-            this._img = image;
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        this.loadingImage = img;
+        img.onload = () => {
+            if (this.loadingImage !== img) return;
+            this.loadingImage = null;
+            this._img = img;
             this.redraw();
 
             // @ts-ignore
-            this.dispatchEvent({type:"imgLoaded",url:this.options.image?.url})
-
-            this.isImgLoading = false;
-
-            return;
-        }
-
-        if(this.options.image?.url){
-            const img = new Image();
-            // 设置跨域模式（解决 CORS 问题）
-            img.crossOrigin = "anonymous";
-
-            this.isImgLoading = true;
-            img.onload = () =>{
-                this._img = img;
-                this.redraw();
-
-                // @ts-ignore
-                this.dispatchEvent({type:"imgLoaded",url:this.options.image?.url})
-
-                this.isImgLoading = false;
-
-                // // 生成Canvas的DataURL
-                // const dataUrl = this.image.toDataURL('image/png'); // 可选参数：'image/jpeg'，并可设置质量
-                //
-                // // 创建下载链接
-                // const link = document.createElement('a');
-                // link.href = dataUrl;
-                // link.download = 'canvas-image.png'; // 设置下载的文件名
-                //
-                // // 触发下载
-                // document.body.appendChild(link);
-                // link.click();
-                //
-                // // 可选：移除链接
-                // document.body.removeChild(link);
-            }
-            // @ts-ignore
-            img.onerror = (e:Error) =>{
-                console.log(`[BillboardTexture] 图片载入失败：`,e)
-                log.error(`[BillboardTexture] 图片载入失败：${e.toString()}`);
-
-                this.isImgLoading = false;
-            }
-
-            img.src = this.options.image.url;
-        }
+            this.dispatchEvent({ type: "imgLoaded", url });
+        };
+        img.onerror = (error) => {
+            if (this.loadingImage !== img) return;
+            this.loadingImage = null;
+            log.error("[BillboardTexture] 图片载入失败：" + url + "，" + String(error));
+        };
+        img.src = url;
     }
 
     redraw(){
@@ -222,12 +205,13 @@ export default class BillboardTexture extends THREE.CanvasTexture {
             let imageWidth = imageSize.width;
             let imageHeight = imageSize.height;
 
-            let context = this.image.getContext('2d');
+            const context = this.image.getContext('2d');
+            if (!context) return;
             context.clearRect(0, 0, this.image.width, this.image.height);
             context.scale(canvasWidth / this.width, canvasHeight / this.height);
             context.save();
 
-            const imageIsVisible = this.options.image.url && this.options.image.visible;
+            const imageIsVisible = this.hasVisibleImage;
             let imageMargin = imageIsVisible ? (this.options.image.margin || 0) : 0;
             imageWidth = imageIsVisible ? imageWidth : 0;
             imageHeight = imageIsVisible ? imageHeight : 0;
@@ -236,7 +220,7 @@ export default class BillboardTexture extends THREE.CanvasTexture {
             imageMargin = textIsVisible ? imageMargin : 0;
 
             const padding = this.options.text.padding || 0;
-            const textAlign = this.options.text.align?.toLowerCase() || 'left';
+            const textAlign = (this.options.text.align?.toLowerCase() || 'left') as CanvasTextAlign;
             const imagePosition = this.options.image.position?.toLowerCase();
             // 图像位置
             let imageLeft = 0, imageTop = 0, left = 0, top = 0;

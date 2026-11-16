@@ -927,7 +927,8 @@ class ParticleEmitter extends THREE.Object3D {
     this.emitter.parent?.eventDispatcher.removeEventListener('PARTICLE_CREATED', _handleParticleCreatedFn);
     _handleParticleCreatedFn = null;
 
-    this.emitter.destroy();  
+    this.emitter.destroy();
+    super.dispose();
   }
 }
 

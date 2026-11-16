@@ -7,7 +7,6 @@ import SceneAllMaterials from "./material/SceneAllMaterials.vue";
 import SidebarMaterialProgram from "./material/SidebarMaterialProgram.vue";
 import SidebarMaterialColorProperty from "./material/SidebarMaterialColorProperty.vue";
 import SidebarMaterialNumberProperty from "./material/SidebarMaterialNumberProperty.vue";
-import SidebarMaterialRangeValueProperty from "./material/SidebarMaterialRangeValueProperty.vue";
 import SidebarMaterialBooleanProperty from "./material/SidebarMaterialBooleanProperty.vue";
 import SidebarMaterialConstantProperty from "./material/SidebarMaterialConstantProperty.vue";
 import SidebarMaterialMapProperty from "./material/SidebarMaterialMapProperty.vue";
@@ -298,9 +297,9 @@ const handleUserDataClick = () => {
     <!-- iridescenceIOR -->
     <SidebarMaterialNumberProperty property="iridescenceIOR" name="Thin-Film IOR" :decimal="2" :range="[1, 5]" />
 
-    <!-- iridescenceThicknessMax -->
-    <SidebarMaterialRangeValueProperty property="iridescenceThicknessRange" name="Thin-Film Thickness" :isMin="false"
-      :range="[0, Infinity]" unit="nm" :step="10" />
+    <!-- 薄膜最大厚度 -->
+    <SidebarMaterialNumberProperty property="iridescenceThicknessMaximum" name="Thin-Film Thickness"
+      :range="[0, Infinity]" unit="nm" :step="10" :keyframe="false" />
 
     <!-- sheen -->
     <SidebarMaterialNumberProperty property="sheen" name="Sheen" :decimal="2" :range="[0, 1]" />

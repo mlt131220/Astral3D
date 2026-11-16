@@ -10,8 +10,8 @@ catalogs:
       specifier: ^24.6.0
       version: 24.12.2
     '@types/three':
-      specifier: 0.176.0
-      version: 0.176.0
+      specifier: 0.187.0
+      version: 0.187.0
     '@vitejs/plugin-vue':
       specifier: ^6.0.1
       version: 6.0.6
@@ -22,8 +22,8 @@ catalogs:
       specifier: ^6.0.1
       version: 6.0.11
     three:
-      specifier: 0.176.0
-      version: 0.176.0
+      specifier: 0.187.0
+      version: 0.187.0
     typescript:
       specifier: ^5.4.5
       version: 5.9.3
@@ -36,6 +36,14 @@ catalogs:
     vue:
       specifier: ^3.5.22
       version: 3.5.33
+
+patchedDependencies:
+  three@0.187.0:
+    hash: 96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d
+    path: patches/three@0.187.0.patch
+  web-ifc-three@0.0.126:
+    hash: ff0779dfe125358bc3e1688e51de79a43bbfe2c0e126307c4682655060f7f616
+    path: patches/web-ifc-three@0.0.126.patch
 
 importers:
 
@@ -154,7 +162,7 @@ importers:
         version: 2.3.1(typescript@5.9.3)(vue@3.5.33(typescript@5.9.3))
       three:
         specifier: 'catalog:'
-        version: 0.176.0
+        version: 0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)
       vite-plugin-static-copy:
         specifier: 'catalog:'
         version: 3.4.0(vite@6.4.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
@@ -173,7 +181,7 @@ importers:
         version: link:../../common/build
       '@types/three':
         specifier: 'catalog:'
-        version: 0.176.0
+        version: 0.187.0
       '@vitejs/plugin-vue':
         specifier: 'catalog:'
         version: 6.0.6(vite@6.4.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))(vue@3.5.33(typescript@5.9.3))
@@ -209,28 +217,31 @@ importers:
         version: 0.3.2
       camera-controls:
         specifier: ^2.9.0
-        version: 2.10.1(three@0.176.0)
+        version: 2.10.1(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d))
       localforage:
         specifier: ^1.10.0
         version: 1.10.0
+      opentype.js:
+        specifier: 1.3.4
+        version: 1.3.4
       signals:
         specifier: ^1.0.0
         version: 1.0.0
       three:
         specifier: 'catalog:'
-        version: 0.176.0
+        version: 0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)
       three-gpu-pathtracer:
         specifier: ^0.0.22
-        version: 0.0.22(three-mesh-bvh@0.9.9(three@0.176.0))(three@0.176.0)(xatlas-web@0.1.0)
+        version: 0.0.22(three-mesh-bvh@0.9.9(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)))(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d))(xatlas-web@0.1.0)
       three-mesh-bvh:
         specifier: ^0.9.0
-        version: 0.9.9(three@0.176.0)
+        version: 0.9.9(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d))
       three-viewport-gizmo:
         specifier: ^2.0.2
-        version: 2.2.0(three@0.176.0)
+        version: 2.2.0(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d))
       web-ifc-three:
         specifier: ^0.0.126
-        version: 0.0.126(three@0.176.0)
+        version: 0.0.126(patch_hash=ff0779dfe125358bc3e1688e51de79a43bbfe2c0e126307c4682655060f7f616)(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d))
     devDependencies:
       '@astral3d/build-vite-plugins':
         specifier: workspace:^
@@ -240,7 +251,7 @@ importers:
         version: 24.12.2
       '@types/three':
         specifier: 'catalog:'
-        version: 0.176.0
+        version: 0.187.0
       rollup-plugin-visualizer:
         specifier: 'catalog:'
         version: 6.0.11(rolldown@1.0.0-rc.17)(rollup@4.60.2)
@@ -2039,8 +2050,8 @@ packages:
   '@types/stats.js@0.17.4':
     resolution: {integrity: sha512-jIBvWWShCvlBqBNIZt0KAshWpvSjhkwkEu4ZUcASoAvhmrgAUI2t1dXrjSL4xXVLB4FznPrIsX3nKXFl/Dt4vA==}
 
-  '@types/three@0.176.0':
-    resolution: {integrity: sha512-FwfPXxCqOtP7EdYMagCFePNKoG1AGBDUEVKtluv2BTVRpSt7b+X27xNsirPCTCqY1pGYsPUzaM3jgWP7dXSxlw==}
+  '@types/three@0.187.0':
+    resolution: {integrity: sha512-v+vKNarUtk4n2QRZ4+CN5ygMM0ARUjXjIQl0R/unMUfmStFeVqGbgqarbrpoGTXRZoulSH16ePrVJVxPJEbMUA==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -2056,6 +2067,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@unocss/cli@66.6.8':
     resolution: {integrity: sha512-dJ4AmrhCtQwEDJtpFG7AgJ4Qi4GWnNgWWlLWq4DhKBOCcvldr9k98mscdhs3MOwph25DIxU5MdLRAg/OS1JryQ==}
@@ -2477,9 +2489,6 @@ packages:
     resolution: {integrity: sha512-shTJncjV9JTI4oVNyF1FQonetYAiTBd+Qj7cY89SWbXSkx7gyhrgtEdF2ZAVWS1S3SHlaROO6F2IesJxQEkZBw==}
     peerDependencies:
       vue: ^3.5.0
-
-  '@webgpu/types@0.1.69':
-    resolution: {integrity: sha512-RPmm6kgRbI8e98zSD3RVACvnuktIja5+yLgDAkTmxLr90BEwdTXRQWNLF3ETTTyH/8mKhznZuN5AveXYFEsMGQ==}
 
   acorn@8.16.0:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
@@ -2988,6 +2997,9 @@ packages:
 
   fflate@0.8.2:
     resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
+
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
@@ -3530,11 +3542,11 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
-  meshoptimizer@0.18.1:
-    resolution: {integrity: sha512-ZhoIoL7TNV4s5B6+rx5mC//fw8/POGyNxS/DZyCJeiZ12ScLfVwRE/GfsxwiTkMYYD5DmK2/JXnEVXqL4rF+Sw==}
-
   meshoptimizer@0.23.0:
     resolution: {integrity: sha512-zAZcfhHE3wBbwEN8MfCMI9PKRyOpz8491wcR2dxkv3IlNwDZrq2hEs5JZVtzfBrmjWhBZZtZZUO0OBSNFq5iUQ==}
+
+  meshoptimizer@1.1.1:
+    resolution: {integrity: sha512-oRFNWJRDA/WTrVj7NWvqa5HqE1t9MYDj2VaWirQCzCCrAd2GHrqR/sQezCxiWATPNlKTcRaPRHPJwIRoPBAp5g==}
 
   micromark-core-commonmark@2.0.3:
     resolution: {integrity: sha512-RDBrHEMSxVFLg6xvnXmb1Ayr2WzLAWjeSATAoxwKYJV94TeNavgoIdA0a9ytzDSVzBy2YKFK+emCPOEibLeCrg==}
@@ -3728,6 +3740,11 @@ packages:
 
   opener@1.5.2:
     resolution: {integrity: sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A==}
+    hasBin: true
+
+  opentype.js@1.3.4:
+    resolution: {integrity: sha512-d2JE9RP/6uagpQAVtJoF0pJJA/fgai89Cc50Yp0EJHk+eLp6QQ7gBoblsnubRULNY132I0J1QKMJ+JTbMqz4sw==}
+    engines: {node: '>= 8.0.0'}
     hasBin: true
 
   ora@9.4.0:
@@ -4252,6 +4269,9 @@ packages:
     resolution: {integrity: sha512-IIaP0g3iy9Cyy18w3M9YcaDudujEAVHKt3a3QJg1+sr/oX96TbaGUubG0hJyCjCBThFH+tFpcIyoUHUn1ogaLA==}
     engines: {node: '>=20'}
 
+  string.prototype.codepointat@0.2.1:
+    resolution: {integrity: sha512-2cBVCj6I4IOvEnjgO/hWqXjqBGsY+zwPmHl12Srk9IXSZ56Jwwmy+66XO5Iut/oQVR7t5ihYdLB0GMa4alEUcg==}
+
   stringify-entities@4.0.4:
     resolution: {integrity: sha512-IwfBptatlO+QCJUo19AqvrPNqlVMpW9YEL2LIVY+Rpv2qsjCGxaDLNRgeGsQWJhfItebuJhsGSLjaBbNSQ+ieg==}
 
@@ -4323,8 +4343,11 @@ packages:
     peerDependencies:
       three: '>=0.162.0 <1.0.0'
 
-  three@0.176.0:
-    resolution: {integrity: sha512-PWRKYWQo23ojf9oZSlRGH8K09q7nRSWx6LY/HF/UUrMdYgN9i1e2OwJYHoQjwc6HF/4lvvYLC5YC1X8UJL2ZpA==}
+  three@0.187.0:
+    resolution: {integrity: sha512-Qiu7R+Cmh8CstZsY1uJOSWnVlfo7ZtNLV7mF8Jltk3LB3AtDu9cRZlcnRKkAk8Y4z6KKw35z7Y7Urd7jWY8etA==}
+
+  tiny-inflate@1.0.3:
+    resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
 
   tinyexec@1.1.1:
     resolution: {integrity: sha512-VKS/ZaQhhkKFMANmAOhhXVoIfBXblQxGX1myCQ2faQrfmobMftXeJPcZGp0gS07ocvGJWDLZGyOZDadDBqYIJg==}
@@ -6309,15 +6332,14 @@ snapshots:
 
   '@types/stats.js@0.17.4': {}
 
-  '@types/three@0.176.0':
+  '@types/three@0.187.0':
     dependencies:
       '@dimforge/rapier3d-compat': 0.12.0
       '@tweenjs/tween.js': 23.1.3
       '@types/stats.js': 0.17.4
       '@types/webxr': 0.5.24
-      '@webgpu/types': 0.1.69
-      fflate: 0.8.2
-      meshoptimizer: 0.18.1
+      fflate: 0.8.3
+      meshoptimizer: 1.1.1
 
   '@types/trusted-types@2.0.7': {}
 
@@ -7059,8 +7081,6 @@ snapshots:
     dependencies:
       vue: 3.5.33(typescript@5.9.3)
 
-  '@webgpu/types@0.1.69': {}
-
   acorn@8.16.0: {}
 
   agent-base@7.1.4: {}
@@ -7196,9 +7216,9 @@ snapshots:
 
   camelcase@5.3.1: {}
 
-  camera-controls@2.10.1(three@0.176.0):
+  camera-controls@2.10.1(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)):
     dependencies:
-      three: 0.176.0
+      three: 0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)
 
   caniuse-lite@1.0.30001791: {}
 
@@ -7594,6 +7614,8 @@ snapshots:
       picomatch: 4.0.4
 
   fflate@0.8.2: {}
+
+  fflate@0.8.3: {}
 
   fill-range@7.1.1:
     dependencies:
@@ -8197,9 +8219,9 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  meshoptimizer@0.18.1: {}
-
   meshoptimizer@0.23.0: {}
+
+  meshoptimizer@1.1.1: {}
 
   micromark-core-commonmark@2.0.3:
     dependencies:
@@ -8475,6 +8497,11 @@ snapshots:
       is-wsl: 2.2.0
 
   opener@1.5.2: {}
+
+  opentype.js@1.3.4:
+    dependencies:
+      string.prototype.codepointat: 0.2.1
+      tiny-inflate: 1.0.3
 
   ora@9.4.0:
     dependencies:
@@ -9056,6 +9083,8 @@ snapshots:
       get-east-asian-width: 1.5.0
       strip-ansi: 7.2.0
 
+  string.prototype.codepointat@0.2.1: {}
+
   stringify-entities@4.0.4:
     dependencies:
       character-entities-html4: 2.1.0
@@ -9097,25 +9126,27 @@ snapshots:
 
   tabbable@6.4.0: {}
 
-  three-gpu-pathtracer@0.0.22(three-mesh-bvh@0.9.9(three@0.176.0))(three@0.176.0)(xatlas-web@0.1.0):
+  three-gpu-pathtracer@0.0.22(three-mesh-bvh@0.9.9(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)))(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d))(xatlas-web@0.1.0):
     dependencies:
-      three: 0.176.0
-      three-mesh-bvh: 0.9.9(three@0.176.0)
+      three: 0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)
+      three-mesh-bvh: 0.9.9(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d))
       xatlas-web: 0.1.0
 
-  three-mesh-bvh@0.5.21(three@0.176.0):
+  three-mesh-bvh@0.5.21(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)):
     dependencies:
-      three: 0.176.0
+      three: 0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)
 
-  three-mesh-bvh@0.9.9(three@0.176.0):
+  three-mesh-bvh@0.9.9(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)):
     dependencies:
-      three: 0.176.0
+      three: 0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)
 
-  three-viewport-gizmo@2.2.0(three@0.176.0):
+  three-viewport-gizmo@2.2.0(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)):
     dependencies:
-      three: 0.176.0
+      three: 0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)
 
-  three@0.176.0: {}
+  three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d): {}
+
+  tiny-inflate@1.0.3: {}
 
   tinyexec@1.1.1: {}
 
@@ -9712,10 +9743,10 @@ snapshots:
 
   watermark-js-plus@1.6.3: {}
 
-  web-ifc-three@0.0.126(three@0.176.0):
+  web-ifc-three@0.0.126(patch_hash=ff0779dfe125358bc3e1688e51de79a43bbfe2c0e126307c4682655060f7f616)(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)):
     dependencies:
-      three: 0.176.0
-      three-mesh-bvh: 0.5.21(three@0.176.0)
+      three: 0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d)
+      three-mesh-bvh: 0.5.21(three@0.187.0(patch_hash=96c5b50d51184f6a212c057ed3d6dd75cd6b56581130e35debeb87dd44ee4b7d))
       web-ifc: 0.0.39
 
   web-ifc@0.0.39: {}

@@ -52,7 +52,7 @@
 ## 🛠️ 技术栈
 
 ![Vue3](https://img.shields.io/badge/Vue-3.5.22-4FC08D?logo=vuedotjs)
-![Three.js](https://img.shields.io/badge/Three.js-r176-000000?logo=threedotjs)
+![Three.js](https://img.shields.io/badge/Three.js-r187-000000?logo=threedotjs)
 ![NaiveUI](https://img.shields.io/badge/Naive_UI-2.43.1-66C060?logo=vue.js)
 ![UnoCSS](https://img.shields.io/badge/UnoCSS-0.46.5-333333?logo=unocss)
 
